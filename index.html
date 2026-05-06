@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-  <title>OceanAR — Full Immersive Markerless</title>
+  <title>OceanAR — Immersive Deep Sea</title>
 
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 
@@ -21,8 +21,22 @@
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family:'Space Mono',monospace; background:var(--deep); color:var(--text); overflow:hidden; height: 100vh; }
 
-    /* ── SPLASH ── */
-    #splash, #loading {
+    /* ── 1. LOADING SCREEN ── */
+    #loading {
+      position:fixed; inset:0; z-index:1100; background:var(--deep);
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.2rem;
+      transition:opacity 0.5s;
+    }
+    #loading.hidden { opacity:0; pointer-events:none; }
+    .fish-anim { font-size:2.5rem; animation:swim 1s ease infinite alternate; }
+    @keyframes swim { from{transform:translateX(-18px)} to{transform:translateX(18px)} }
+    .load-label { font-size:0.58rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--teal); }
+    .load-track { width:140px; height:1px; background:rgba(26,179,200,0.2); position:relative; overflow:hidden; }
+    .load-track::after { content:''; position:absolute; inset:0; background:var(--glow); animation:fill 1.5s ease infinite; }
+    @keyframes fill { 0%{transform:scaleX(0);transform-origin:left} 50%{transform:scaleX(1);transform-origin:left} 51%{transform:scaleX(1);transform-origin:right} 100%{transform:scaleX(0);transform-origin:right} }
+
+    /* ── 2. SPLASH SCREEN ── */
+    #splash {
       position:fixed; inset:0; z-index:1000;
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       background:radial-gradient(ellipse at 50% 70%, #0a3a5a 0%, #020c18 70%);
@@ -39,103 +53,115 @@
     }
     @keyframes rise { to { transform:translateY(-110vh); opacity:0; } }
 
-    .title {
-      font-family:'Cormorant Garamond',serif;
-      font-size:clamp(3.2rem, 11vw, 6rem); font-weight:300; line-height:0.95;
-      color:var(--foam); text-shadow:0 0 50px rgba(0,255,231,0.25);
-    }
+    .splash-content { position:relative; z-index:1001; text-align:center; padding: 2rem; max-width: 420px; }
+    .eyebrow { font-size:0.6rem; letter-spacing:0.35em; color:var(--teal); text-transform:uppercase; margin-bottom:1rem; opacity:0.8; }
+    .title { font-family:'Cormorant Garamond',serif; font-size:clamp(3.2rem, 11vw, 6rem); font-weight:300; line-height:0.95; color:var(--foam); text-shadow:0 0 50px rgba(0,255,231,0.25); margin-bottom: 0.3rem;}
     .title em { font-style:italic; color:var(--glow); }
-
-    .pills { display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin-top:1.5rem; }
-    .pill {
-      font-size:0.55rem; letter-spacing:0.12em; text-transform:uppercase;
-      color:var(--teal); border:1px solid rgba(26,179,200,0.3);
-      padding:0.28rem 0.6rem; border-radius:20px; background:rgba(26,179,200,0.05);
-    }
+    .subtitle { font-family:'Cormorant Garamond',serif; font-size:clamp(0.9rem,2.5vw,1.2rem); font-style:italic; font-weight:300; color:rgba(168,240,245,0.55); margin-bottom:1.8rem; }
+    
+    .pills { display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin-bottom:1.8rem; }
+    .pill { font-size:0.55rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--teal); border:1px solid rgba(26,179,200,0.3); padding:0.28rem 0.6rem; border-radius:20px; background:rgba(26,179,200,0.05); }
 
     #startBtn {
-      background:transparent; border:1.5px solid var(--glow); color:var(--glow);
-      padding:1.2rem 2.5rem; cursor:pointer; text-transform:uppercase; 
-      letter-spacing:0.2em; font-size: 0.8rem; margin-top: 3rem; z-index: 1001;
+      position:relative; overflow:hidden; background:transparent; border:1.5px solid var(--glow); color:var(--glow);
+      font-family:'Space Mono',monospace; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase;
+      padding:0.9rem 2.2rem; cursor:pointer; transition:color 0.3s;
     }
+    #startBtn::before { content:''; position:absolute; inset:0; background:var(--glow); transform:scaleX(0); transform-origin:left; transition:transform 0.3s; z-index:-1; }
+    #startBtn:hover { color:var(--deep); }
+    #startBtn:hover::before { transform:scaleX(1); }
 
-    /* ── HUD ── */
+    /* ── 3. HUD (TOP BAR) ── */
     #hud { position:fixed; inset:0; z-index:100; pointer-events:none; }
-    .hud-top {
-      position:absolute; top:0; left:0; right:0; padding:1.5rem;
-      display:flex; justify-content:space-between; align-items:center;
-      background:linear-gradient(to bottom, rgba(2,12,24,0.75), transparent);
-    }
-    .hud-logo { font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:var(--foam); }
+    .hud-top { position:absolute; top:0; left:0; right:0; padding:1.2rem 1.5rem; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(to bottom, rgba(2,12,24,0.75), transparent); }
+    .hud-logo { font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:300; color:var(--foam); }
     .hud-logo span { color:var(--glow); font-style:italic; }
     .hud-status { font-size:0.5rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--teal); display:flex; align-items:center; gap:0.4rem; }
     .dot { width:6px; height:6px; border-radius:50%; background:var(--glow); box-shadow:0 0 8px var(--glow); animation:pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    /* ── CREATURE SELECTOR ── */
+    /* ── 4. CREATURE SELECTOR ── */
     #creatureSelector {
-      position:fixed; bottom:2.5rem; left:50%; transform:translateX(-50%);
+      position:fixed; bottom:2rem; left:50%; transform:translateX(-50%);
       display:flex; gap:0.8rem; z-index:150; pointer-events:all;
     }
     .creature-btn {
-      background:rgba(2,12,24,0.85); border:1px solid rgba(26,179,200,0.3);
-      color:var(--foam); font-family:'Space Mono',monospace;
-      font-size:0.55rem; letter-spacing:0.1rem; text-transform:uppercase;
-      padding:0.6rem 1rem; cursor:pointer; backdrop-filter:blur(10px);
-      display:flex; flex-direction:column; align-items:center; gap:0.3rem;
+      background:rgba(2,12,24,0.85); border:1px solid rgba(26,179,200,0.3); color:var(--foam);
+      font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.1rem; text-transform:uppercase;
+      padding:0.6rem 1rem; cursor:pointer; backdrop-filter:blur(10px); display:flex; flex-direction:column; align-items:center; gap:0.3rem; transition: all 0.2s;
     }
     .creature-btn.active { border-color:var(--glow); color:var(--glow); box-shadow:0 0 15px rgba(0,255,231,0.2); }
     .creature-btn span { font-size:1.4rem; }
-
-    /* ── AR BUTTON ── */
-    #ar-button {
-      position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%);
-      background: #fff; color: #000; border: none;
-      padding: 1rem 2rem; font-weight: 700; letter-spacing: 0.1em;
-      text-transform: uppercase; border-radius: 4px; cursor: pointer;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 160;
+    
+    .info-toggle-btn {
+        background: transparent; border: 1px solid rgba(168,240,245,0.4); color: rgba(168,240,245,0.8);
+        font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.1rem; text-transform:uppercase;
+        padding:0.6rem 1rem; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:0.3rem;
     }
 
-    /* ── INFO CARD ── */
+    /* ── 5. AR BUTTON (SLOT OVERRIDE) ── */
+    #ar-button {
+      position: absolute; bottom: 7.5rem; left: 50%; transform: translateX(-50%);
+      background: var(--glow); color: var(--deep); border: none;
+      padding: 1rem 2rem; font-family:'Space Mono',monospace; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; border-radius: 2px; cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0,255,231,0.2); z-index: 160; white-space: nowrap;
+    }
+
+    /* ── 6. INFO CARD (SLIDE UP) ── */
     #infoCard {
       position:fixed; bottom:-100%; left:50%; transform:translateX(-50%);
-      width:min(420px,93vw); z-index:500; transition:bottom 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      width:min(420px,93vw); z-index:500; transition:bottom 0.45s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: all;
     }
     #infoCard.visible { bottom: 1.5rem; }
     .card-wrap {
-      background: linear-gradient(135deg,rgba(10,37,64,0.98),rgba(2,12,24,0.98));
-      border: 1px solid var(--teal); padding: 1.8rem; border-radius: 4px;
+      background: linear-gradient(135deg,rgba(10,37,64,0.97),rgba(2,12,24,0.97));
+      border: 1px solid rgba(26,179,200,0.25); border-radius: 2px;
       backdrop-filter: blur(20px); box-shadow: 0 20px 60px rgba(0,0,0,0.8);
     }
-    .card-name { font-family:'Cormorant Garamond',serif; font-size:1.9rem; color:var(--foam); line-height:1; }
-    .card-sci { font-size:0.7rem; font-style:italic; color:var(--teal); margin-top:0.3rem; }
-    .card-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; margin: 1.2rem 0; }
-    .stat label { display:block; font-size:0.45rem; letter-spacing:0.2em; color:var(--teal); text-transform:uppercase; margin-bottom:2px; }
-    .stat value { font-size:0.65rem; color:var(--foam); }
-    .fact-box { background:rgba(0,255,231,0.04); border-left:2px solid var(--glow); padding:0.8rem; margin-bottom:1.2rem; }
+    .card-bar { height:3px; background:linear-gradient(90deg,var(--glow),var(--teal),transparent); }
+    .card-body { padding:1.4rem; }
+    .card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.9rem; }
+    .card-name { font-family:'Cormorant Garamond',serif; font-size:1.9rem; color:var(--foam); font-weight:300; line-height:1; }
+    .card-sci { font-family:'Cormorant Garamond',serif; font-size:0.8rem; font-style:italic; color:rgba(168,240,245,0.4); margin-top:0.15rem; }
+    .card-emoji { font-size:2.4rem; filter:drop-shadow(0 0 10px rgba(0,255,231,0.35)); }
+    .card-hr { height:1px; background:linear-gradient(90deg,rgba(26,179,200,0.3),transparent); margin-bottom:0.9rem; }
+    .card-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; margin-bottom:0.9rem; }
+    .stat label { display:block; font-size:0.48rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--teal); margin-bottom:0.15rem; }
+    .stat value { font-size:0.7rem; color:var(--foam); line-height:1.4; }
+    .fact-box { background:rgba(0,255,231,0.04); border-left:2px solid var(--glow); padding:0.7rem 0.9rem; margin-bottom:1.1rem; }
+    .fact-label { font-size:0.48rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--glow); margin-bottom:0.25rem; }
     .fact-text { font-family:'Cormorant Garamond',serif; font-size:0.9rem; font-style:italic; color:rgba(168,240,245,0.8); line-height:1.5; }
+    #closeInfoBtn {
+      width:100%; background:transparent; border:1px solid rgba(26,179,200,0.2); color:rgba(168,240,245,0.4);
+      font-family:'Space Mono',monospace; font-size:0.52rem; letter-spacing:0.2em; text-transform:uppercase;
+      padding:0.65rem; cursor:pointer; transition:all 0.2s;
+    }
+    #closeInfoBtn:hover { border-color:var(--teal); color:var(--teal); }
 
-    /* ── ENGINE ── */
+    /* ── 7. AR ENGINE ── */
     model-viewer { width: 100%; height: 100%; background-color: var(--deep); --poster-color: transparent; }
   </style>
 </head>
 <body>
 
 <div id="loading">
-  <div style="font-size:2.5rem; animation: swim 1s ease infinite alternate;">🐠</div>
-  <p style="letter-spacing:0.4em; font-size:0.6rem; color:var(--teal); margin-top:1rem;">RESTING ECOSYSTEM</p>
+  <div class="fish-anim">🐠</div>
+  <div class="load-label">Preparing the ocean</div>
+  <div class="load-track"></div>
 </div>
 
 <div id="splash">
   <div class="bubbles" id="bubblesEl"></div>
-  <div style="text-align:center; z-index:2;">
-    <p style="font-size:0.6rem; letter-spacing:0.4em; color:var(--teal); text-transform:uppercase;">CPIS360 — OceanAR Pro</p>
+  <div class="splash-content">
+    <p class="eyebrow">CPIS360 — AR Experience</p>
     <h1 class="title">Ocean<em>AR</em></h1>
+    <p class="subtitle">Dive into the deep without leaving your room</p>
     <div class="pills">
-        <span class="pill">🐠 Markerless</span>
-        <span class="pill">🦈 Complex Physics</span>
+        <span class="pill">🐠 Markerless Floor Tracking</span>
+        <span class="pill">🦈 Interactive Models</span>
     </div>
-    <button id="startBtn">Begin Experience</button>
+    <button id="startBtn">Enter the Ocean</button>
   </div>
 </div>
 
@@ -150,11 +176,15 @@
   id="oceanView"
   src="models/school_of_fish.glb" 
   ios-src="models/school_of_fish.usdz"
-  ar ar-modes="webxr scene-viewer quick-look" 
-  camera-controls auto-rotate shadow-intensity="1" 
+  ar 
+  ar-modes="webxr scene-viewer quick-look" 
+  ar-placement="floor" 
+  camera-controls 
+  auto-rotate 
+  shadow-intensity="1" 
   exposure="1.2">
   
-  <button slot="ar-button" id="ar-button">ENTER AR WORLD</button>
+  <button slot="ar-button" id="ar-button">ACTIVATE AR CAMERA</button>
 
   <div id="creatureSelector">
     <button id="btn-fish" class="creature-btn active" onclick="switchCreature('fish')">
@@ -163,7 +193,7 @@
     <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')">
       <span>🦈</span>Shark
     </button>
-    <button class="creature-btn" onclick="toggleInfo()" style="border-color:var(--foam)">
+    <button class="info-toggle-btn" onclick="toggleInfo()">
         <span>✦</span>Info
     </button>
   </div>
@@ -171,100 +201,21 @@
 
 <div id="infoCard">
   <div class="card-wrap">
-    <div class="card-name" id="cName">School of Fish</div>
-    <div class="card-sci" id="cSci">Atheriniformes spp.</div>
-    <div class="card-grid">
+    <div class="card-bar"></div>
+    <div class="card-body">
+      <div class="card-header">
+        <div>
+          <div class="card-name" id="cName">School of Fish</div>
+          <div class="card-sci" id="cSci">Atheriniformes spp.</div>
+        </div>
+        <div class="card-emoji" id="cEmoji">🐠</div>
+      </div>
+      <div class="card-hr"></div>
+      <div class="card-grid">
         <div class="stat"><label>Habitat</label><value id="cHab">Coral Reefs</value></div>
         <div class="stat"><label>Diet</label><value id="cDiet">Plankton</value></div>
         <div class="stat"><label>Depth</label><value id="cDepth">0–200m</value></div>
-        <div class="stat"><label>Status</label><value id="cStatus">Least Concern</value></div>
-    </div>
-    <div class="fact-box">
-        <div class="fact-text" id="cFact">Fish school in tight formations to confuse predators.</div>
-    </div>
-    <button onclick="toggleInfo()" style="width:100%; background:transparent; border:1px solid var(--teal); color:var(--teal); padding:10px; font-size:0.5rem; letter-spacing:0.2em; cursor:pointer;">— DISMISS —</button>
-  </div>
-</div>
-
-<script>
-  const DATA = {
-    fish: {
-      name: 'School of Fish',
-      sci: 'Atheriniformes spp.',
-      hab: 'Coral Reefs, Open Ocean',
-      diet: 'Plankton, Small Invertebrates',
-      depth: '0–200 m',
-      status: 'Least Concern',
-      fact: 'Fish school in tight formations to confuse predators — the group moves as one organism, making it hard to target a single fish.',
-      glb: 'models/school_of_fish.glb',
-      usdz: 'models/school_of_fish.usdz'
-    },
-    shark: {
-      name: 'Swimming Shark',
-      sci: 'Carcharhinus sp.',
-      hab: 'Open Ocean, Coastal Waters',
-      diet: 'Fish, Rays, Marine Mammals',
-      depth: '0–600 m',
-      status: 'Vulnerable',
-      fact: 'Sharks have been around for over 450 million years — older than trees. They have electroreceptors that detect the heartbeat of hidden prey.',
-      glb: 'models/swimming_shark.glb',
-      usdz: 'models/swimming_shark.usdz'
-    }
-  };
-
-  const splash = document.getElementById('splash');
-  const startBtn = document.getElementById('startBtn');
-
-  // iOS Fix: Touch & Click
-  const startApp = (e) => {
-    e.preventDefault();
-    splash.classList.add('hidden');
-    setTimeout(() => { splash.style.display = 'none'; }, 600);
-  };
-  startBtn.addEventListener('click', startApp);
-  startBtn.addEventListener('touchstart', startApp, {passive: false});
-
-  window.addEventListener('load', () => {
-    makeBubbles();
-    setTimeout(() => document.getElementById('loading').classList.add('hidden'), 1200);
-  });
-
-  function makeBubbles() {
-    const el = document.getElementById('bubblesEl');
-    for (let i = 0; i < 22; i++) {
-      const b = document.createElement('div');
-      b.className = 'bubble';
-      const s = Math.random()*20+8;
-      b.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*8+4}s;animation-delay:${Math.random()*5}s;`;
-      el.appendChild(b);
-    }
-  }
-
-  function switchCreature(id) {
-    const viewer = document.getElementById('oceanView');
-    const d = DATA[id];
-    
-    // Update Engine
-    viewer.src = d.glb;
-    viewer.iosSrc = d.usdz;
-
-    // Update UI
-    document.getElementById('cName').innerText = d.name;
-    document.getElementById('cSci').innerText = d.sci;
-    document.getElementById('cHab').innerText = d.hab;
-    document.getElementById('cDiet').innerText = d.diet;
-    document.getElementById('cDepth').innerText = d.depth;
-    document.getElementById('cStatus').innerText = d.status;
-    document.getElementById('cFact').innerText = d.fact;
-
-    document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-' + id).classList.add('active');
-  }
-
-  function toggleInfo() {
-    document.getElementById('infoCard').classList.toggle('visible');
-  }
-</script>
-
-</body>
-</html>
+        <div class="stat"><label>Conservation</label><value id="cStatus">Least Concern</value></div>
+      </div>
+      <div class="fact-box">
+        <div class="fact-
