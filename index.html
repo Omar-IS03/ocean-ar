@@ -159,10 +159,25 @@
 </div>
 
 <script>
-  // THE DATA
+  // THE DATA WITH A WORKING PLACEHOLDER
   const DATA = {
-    fish: { name: 'School of Fish', hab: 'Coral Reefs', diet: 'Plankton', fact: 'Fish school in tight formations to confuse predators.', glb: 'models/school_of_fish.glb', usdz: 'models/school_of_fish.usdz' },
-    shark: { name: 'Swimming Shark', hab: 'Open Ocean', diet: 'Fish, Rays', fact: 'Sharks use electroreceptors to detect hidden prey.', glb: 'models/swimming_shark.glb', usdz: 'models/swimming_shark.usdz' }
+    fish: { 
+        name: 'School of Fish', 
+        hab: 'Coral Reefs', 
+        diet: 'Plankton', 
+        fact: 'Fish school in tight formations to confuse predators.', 
+        glb: 'models/school_of_fish.glb', 
+        usdz: 'models/school_of_fish.usdz' 
+    },
+    shark: { 
+        name: 'Shark (Placeholder)', 
+        hab: 'Open Ocean', 
+        diet: 'Fish, Rays', 
+        fact: 'This is a working 3D Astronaut placeholder to test the iOS camera until your real Shark model is ready!', 
+        // Using official Google/Apple test models to guarantee the camera opens
+        glb: 'https://modelviewer.dev/shared-assets/models/Astronaut.glb', 
+        usdz: 'https://modelviewer.dev/shared-assets/models/Astronaut.usdz' 
+    }
   };
 
   // 1. FAST LOADER CLEAR
@@ -176,21 +191,18 @@
     }, 800);
   });
 
-  // 2. THE FIX: LAZY LOAD MODELS ON CLICK
+  // 2. LAZY LOAD MODELS ON CLICK
   const startBtn = document.getElementById('startBtn');
   const splash = document.getElementById('splash');
 
   const enterOcean = (e) => {
     e.preventDefault();
-    
-    // Hide Splash
     splash.classList.add('splash-hide');
     
-    // Wait for the splash to fade, THEN load the heavy 3D files.
-    // This prevents the iPhone from freezing!
+    // Wait for splash to fade, then load the Fish
     setTimeout(() => { 
         splash.style.display = 'none'; 
-        switchCreature('fish'); // Inject the 3D model now
+        switchCreature('fish'); 
     }, 500);
   };
 
