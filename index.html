@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-  <title>OceanAR — Markerless Experience</title>
+  <title>OceanAR — Immersive Experience</title>
 
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 
@@ -21,14 +21,14 @@
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family:'Space Mono',monospace; background:var(--deep); color:var(--text); overflow:hidden; height: 100vh; }
 
-    /* ── SPLASH SCREEN ── */
-    #splash, #loading {
+    /* ── SPLASH SCREEN (iOS FIX) ── */
+    #splash {
       position:fixed; inset:0; z-index:1000;
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       background:radial-gradient(ellipse at 50% 70%, #0a3a5a 0%, #020c18 70%);
-      transition: opacity 0.6s ease, visibility 0.6s;
+      transition: opacity 0.5s ease, visibility 0.5s;
     }
-    .hidden { opacity:0 !important; visibility: hidden !important; pointer-events:none !important; }
+    #splash.hidden { opacity:0; visibility: hidden; pointer-events:none; }
 
     .bubbles { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index: 1; }
     .bubble {
@@ -41,8 +41,8 @@
 
     .title {
       font-family:'Cormorant Garamond',serif;
-      font-size:clamp(3.2rem, 11vw, 6rem); font-weight:300; line-height:0.95;
-      color:var(--foam); text-shadow:0 0 50px rgba(0,255,231,0.25);
+      font-size:clamp(3rem, 10vw, 6rem); font-weight:300; line-height:0.95;
+      color:var(--foam); text-shadow:0 0 40px rgba(0,255,231,0.25);
     }
     .title em { font-style:italic; color:var(--glow); }
 
@@ -56,7 +56,6 @@
     model-viewer {
       width: 100%; height: 100%;
       background-color: var(--deep);
-      --poster-color: transparent;
     }
 
     /* ── HUD ── */
@@ -66,100 +65,71 @@
       z-index: 100; pointer-events: none;
     }
     .hud-logo { font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:var(--foam); }
-    .hud-logo span { color:var(--glow); font-style:italic; }
 
     #ar-button {
       position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%);
       background: #fff; color: #000; border: none;
       padding: 1rem 2rem; font-weight: 700; letter-spacing: 0.1em;
       text-transform: uppercase; border-radius: 4px; cursor: pointer;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
 
-    /* ── INFO CARD ── */
-    #infoCard {
-      position:fixed; bottom:-100%; left:50%; transform:translateX(-50%);
-      width:min(420px,93vw); z-index:500; transition:bottom 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    /* ── LOADING ── */
+    #loading {
+      position:fixed; inset:0; z-index:1100; background:var(--deep);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      transition:opacity 0.5s;
     }
-    #infoCard.visible { bottom: 1.5rem; }
-    .card-wrap {
-      background: rgba(10, 37, 64, 0.98);
-      border: 1px solid var(--teal); padding: 1.8rem; border-radius: 8px;
-      backdrop-filter: blur(15px);
-    }
-    .info-toggle {
-        background: transparent; border: 1px solid var(--teal); color: var(--teal);
-        padding: 5px 12px; font-size: 0.6rem; cursor: pointer; pointer-events: auto;
-    }
+    #loading.hidden { opacity:0; pointer-events:none; }
   </style>
 </head>
 <body>
 
 <div id="loading">
-  <div style="font-size:2rem; animation: swim 2s infinite ease-in-out;">🐠</div>
-  <p style="letter-spacing:0.4em; font-size:0.6rem; color:var(--teal); margin-top:1rem;">PREPARING ECOSYSTEM</p>
+  <div style="font-size:2rem; animation: pulse 2s infinite;">🐠</div>
+  <p style="letter-spacing:0.4em; font-size:0.6rem; color:var(--teal); margin-top:1rem;">LOADING OCEAN</p>
 </div>
 
 <div id="splash">
   <div class="bubbles" id="bubblesEl"></div>
   <div style="text-align:center; z-index:2;">
-    <p style="font-size:0.6rem; letter-spacing:0.4em; color:var(--teal); text-transform:uppercase;">CPIS360</p>
+    <p style="font-size:0.6rem; letter-spacing:0.4em; color:var(--teal); text-transform:uppercase;">CPIS360 EXPERIMENT</p>
     <h1 class="title">Ocean<em>AR</em></h1>
-    <p style="font-family:'Cormorant Garamond',serif; font-style:italic; opacity:0.6; margin-top:0.5rem;">Markerless Deep Sea Experience</p>
     <button id="startBtn">Begin Experience</button>
   </div>
 </div>
 
 <div class="hud-top">
     <div class="hud-logo">Ocean<span>AR</span></div>
-    <button class="info-toggle" onclick="toggleInfo()">✦ LEARN MORE</button>
 </div>
 
 <model-viewer 
   id="oceanView"
   src="models/school_of_fish.glb" 
   ios-src="models/school_of_fish.usdz"
-  ar 
-  ar-modes="webxr scene-viewer quick-look" 
-  camera-controls 
-  auto-rotate 
-  shadow-intensity="1"
-  exposure="1.2">
-  
-  <button slot="ar-button" id="ar-button">👋 VIEW IN YOUR ROOM</button>
+  ar ar-modes="webxr scene-viewer quick-look" 
+  camera-controls auto-rotate shadow-intensity="1">
+  <button slot="ar-button" id="ar-button">VIEW IN YOUR ROOM</button>
 </model-viewer>
-
-<div id="infoCard">
-  <div class="card-wrap">
-    <h2 style="font-family:'Cormorant Garamond',serif; color:var(--foam); font-size:2rem;">School of Fish</h2>
-    <p style="font-size:0.85rem; line-height:1.7; margin: 1.2rem 0; color:rgba(168,240,245,0.8); font-style: italic;">
-        "Fish school in tight formations to confuse predators. By moving as one organism, they make it nearly impossible for hunters to focus on a single target."
-    </p>
-    <button onclick="toggleInfo()" style="width:100%; background:var(--teal); border:none; color:var(--deep); padding:12px; font-weight:bold; cursor:pointer; letter-spacing: 0.1em;">DISMISS</button>
-  </div>
-</div>
 
 <script>
   const splash = document.getElementById('splash');
   const startBtn = document.getElementById('startBtn');
 
-  // iOS Safari Tap Fix
-  const startApp = (e) => {
+  // iOS TOUCH FIX
+  const begin = (e) => {
     e.preventDefault();
     splash.classList.add('hidden');
+    // Remove from DOM to prevent blocking the camera view
     setTimeout(() => { splash.style.display = 'none'; }, 600);
   };
 
-  startBtn.addEventListener('click', startApp);
-  startBtn.addEventListener('touchstart', startApp, {passive: false});
+  startBtn.addEventListener('click', begin);
+  startBtn.addEventListener('touchstart', begin, {passive: false});
 
-  window.addEventListener('load', () => {
+  window.onload = () => {
     makeBubbles();
-    setTimeout(() => {
-        document.getElementById('loading').classList.add('hidden');
-        setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 600);
-    }, 1000);
-  });
+    setTimeout(() => document.getElementById('loading').classList.add('hidden'), 1000);
+  };
 
   function makeBubbles() {
     const el = document.getElementById('bubblesEl');
@@ -171,11 +141,6 @@
       el.appendChild(b);
     }
   }
-
-  function toggleInfo() {
-    document.getElementById('infoCard').classList.toggle('visible');
-  }
 </script>
-
 </body>
 </html>
