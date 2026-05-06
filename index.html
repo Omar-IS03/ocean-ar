@@ -21,11 +21,11 @@
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     body { font-family:'Space Mono',monospace; background:var(--deep); color:var(--text); overflow:hidden; height: 100vh; width: 100vw; }
 
-    /* ── 1. LOADING SCREEN (Hardened Fix) ── */
+    /* ── 1. LOADING SCREEN ── */
     #loading {
       position:fixed; inset:0; z-index:9999; background:var(--deep);
       display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.2rem;
-      transition: opacity 0.5s ease;
+      transition: opacity 0.4s ease;
     }
     .hidden-load { opacity:0 !important; pointer-events:none !important; }
 
@@ -41,7 +41,7 @@
       position:fixed; inset:0; z-index:1000;
       display:flex; flex-direction:column; align-items:center; justify-content:center;
       background:radial-gradient(ellipse at 50% 70%, #0a3a5a 0%, #020c18 70%);
-      transition: opacity 0.6s ease;
+      transition: opacity 0.5s ease;
     }
     .splash-hide { opacity:0 !important; visibility: hidden !important; pointer-events:none !important; }
 
@@ -106,6 +106,7 @@
     .stat label { display:block; font-size:0.45rem; color:var(--teal); text-transform:uppercase; }
     .stat value { font-size:0.65rem; color:var(--foam); }
 
+    /* ── 7. ENGINE ── */
     model-viewer { width: 100%; height: 100%; background-color: var(--deep); }
   </style>
 </head>
@@ -132,8 +133,6 @@
 
 <model-viewer 
   id="oceanView"
-  src="models/school_of_fish.glb" 
-  ios-src="models/school_of_fish.usdz"
   ar ar-modes="webxr scene-viewer quick-look" 
   ar-placement="floor" 
   camera-controls auto-rotate shadow-intensity="1">
@@ -141,7 +140,7 @@
   <button slot="ar-button" id="ar-button">ENTER AR WORLD</button>
 
   <div id="creatureSelector">
-    <button id="btn-fish" class="creature-btn active" onclick="switchCreature('fish')"><span>🐠</span>Fish</button>
+    <button id="btn-fish" class="creature-btn" onclick="switchCreature('fish')"><span>🐠</span>Fish</button>
     <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')"><span>🦈</span>Shark</button>
     <button class="creature-btn" onclick="toggleInfo()"><span>✦</span>Info</button>
   </div>
@@ -149,55 +148,59 @@
 
 <div id="infoCard">
   <div class="card-wrap">
-    <div class="card-name" id="cName">School of Fish</div>
+    <div class="card-name" id="cName">...</div>
     <div class="card-grid">
-        <div class="stat"><label>Habitat</label><value id="cHab">Coral Reefs</value></div>
-        <div class="stat"><label>Diet</label><value id="cDiet">Plankton</value></div>
+        <div class="stat"><label>Habitat</label><value id="cHab">...</value></div>
+        <div class="stat"><label>Diet</label><value id="cDiet">...</value></div>
     </div>
     <p id="cFact" style="font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.9rem; margin-bottom:1.2rem;"></p>
-    <button onclick="toggleInfo()" style="width:100%; background:transparent; border:1px solid var(--teal); color:var(--teal); padding:10px; font-size:0.5rem; letter-spacing:0.2em;">DISMISS</button>
+    <button onclick="toggleInfo()" style="width:100%; background:transparent; border:1px solid var(--teal); color:var(--teal); padding:10px; font-size:0.5rem; letter-spacing:0.2em; cursor:pointer;">DISMISS</button>
   </div>
 </div>
 
 <script>
+  // THE DATA
   const DATA = {
     fish: { name: 'School of Fish', hab: 'Coral Reefs', diet: 'Plankton', fact: 'Fish school in tight formations to confuse predators.', glb: 'models/school_of_fish.glb', usdz: 'models/school_of_fish.usdz' },
     shark: { name: 'Swimming Shark', hab: 'Open Ocean', diet: 'Fish, Rays', fact: 'Sharks use electroreceptors to detect hidden prey.', glb: 'models/swimming_shark.glb', usdz: 'models/swimming_shark.usdz' }
   };
 
-  // 1. FORCED LOADER REMOVAL (The Bug Fix)
-  function hideLoader() {
-    const loader = document.getElementById('loading');
-    if (loader) {
+  // 1. FAST LOADER CLEAR
+  document.addEventListener('DOMContentLoaded', () => {
+    makeBubbles();
+    // Drop the loader instantly so the splash screen works
+    setTimeout(() => {
+        const loader = document.getElementById('loading');
         loader.classList.add('hidden-load');
-        setTimeout(() => { loader.style.display = 'none'; }, 500);
-    }
-  }
+        setTimeout(() => { loader.style.display = 'none'; }, 400);
+    }, 800);
+  });
 
-  // Hide loader after a maximum of 1.5 seconds regardless of assets
-  setTimeout(hideLoader, 1500);
-
-  // 2. START EXPERIENCE
+  // 2. THE FIX: LAZY LOAD MODELS ON CLICK
   const startBtn = document.getElementById('startBtn');
   const splash = document.getElementById('splash');
 
   const enterOcean = (e) => {
     e.preventDefault();
+    
+    // Hide Splash
     splash.classList.add('splash-hide');
-    setTimeout(() => { splash.style.display = 'none'; }, 600);
+    
+    // Wait for the splash to fade, THEN load the heavy 3D files.
+    // This prevents the iPhone from freezing!
+    setTimeout(() => { 
+        splash.style.display = 'none'; 
+        switchCreature('fish'); // Inject the 3D model now
+    }, 500);
   };
 
   startBtn.addEventListener('click', enterOcean);
   startBtn.addEventListener('touchstart', enterOcean, {passive: false});
 
   // 3. UI GENERATION
-  document.addEventListener('DOMContentLoaded', () => {
-    makeBubbles();
-  });
-
   function makeBubbles() {
     const el = document.getElementById('bubblesEl');
-    for (let i = 0; i < 18; i++) {
+    for (let i = 0; i < 15; i++) {
       const b = document.createElement('div');
       b.className = 'bubble';
       const s = Math.random()*20+8;
@@ -209,12 +212,16 @@
   function switchCreature(id) {
     const viewer = document.getElementById('oceanView');
     const d = DATA[id];
+    
+    // Injecting the source files dynamically
     viewer.src = d.glb;
     viewer.iosSrc = d.usdz;
+    
     document.getElementById('cName').innerText = d.name;
     document.getElementById('cHab').innerText = d.hab;
     document.getElementById('cDiet').innerText = d.diet;
     document.getElementById('cFact').innerText = d.fact;
+    
     document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-' + id).classList.add('active');
   }
