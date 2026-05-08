@@ -11,29 +11,30 @@
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family:'Space Mono',monospace; background:var(--deep); color:var(--text); overflow:hidden; height: 100vh; }
 
-    /* LOADER & SPLASH */
+    /* الشاشات المؤقتة */
     #loading { position:fixed; inset:0; z-index:9999; background:var(--deep); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.2rem; transition: 0.4s; }
     .hidden-load { opacity:0; pointer-events:none; }
     #splash { position:fixed; inset:0; z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(ellipse at 50% 70%, #0a3a5a 0%, #020c18 70%); transition: 0.5s; }
     .splash-hide { opacity:0; visibility: hidden; }
+    
     .title { font-family:'Cormorant Garamond',serif; font-size:clamp(3.2rem, 11vw, 6rem); color:var(--foam); margin-bottom: 1.8rem;}
     #startBtn { border:1.5px solid var(--glow); color:var(--glow); background:transparent; padding:1rem 2.5rem; cursor:pointer; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.2em; }
 
-    /* UI ELEMENTS */
+    /* واجهة المستخدم */
     .hud-top { position:absolute; top:0; left:0; right:0; padding:1.5rem; display:flex; justify-content:space-between; z-index: 100; pointer-events: none; }
     .hud-logo { font-family:'Cormorant Garamond',serif; font-size:1.2rem; color:var(--foam); }
     #creatureSelector { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); display:flex; gap:0.8rem; z-index:150; }
     .creature-btn { background:rgba(2,12,24,0.85); border:1px solid rgba(26,179,200,0.3); color:var(--foam); padding:0.6rem 1rem; border-radius: 4px; font-size:0.55rem; text-transform:uppercase; cursor:pointer; }
     .creature-btn.active { border-color:var(--glow); color:var(--glow); }
 
-    /* AR BUTTON */
+    /* زر الـ AR */
     #ar-button { position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%); background: var(--glow); color: var(--deep); border: none; padding: 1rem 2rem; font-weight: 700; border-radius: 4px; cursor: pointer; z-index:100; }
-    model-viewer { width: 100%; height: 100%; }
+    model-viewer { width: 100%; height: 100%; background-color: var(--deep); }
   </style>
 </head>
 <body>
 
-<audio id="sharkGrowl" loop preload="auto">
+<audio id="sharkGrowl" loop>
   <source src="Audio/SharkSound.mp3" type="audio/mpeg">
 </audio>
 
@@ -55,6 +56,8 @@
 
 <model-viewer 
   id="oceanView"
+  src="Models/School_of_fish.glb"
+  ios-src="Models/School_of_fish.usdz"
   ar 
   ar-modes="quick-look webxr scene-viewer" 
   ar-placement="floor" 
@@ -62,67 +65,56 @@
   shadow-intensity="1">
   <button slot="ar-button" id="ar-button">ENTER AR WORLD</button>
   <div id="creatureSelector">
-    <button id="btn-fish" class="creature-btn" onclick="switchCreature('fish')"><span>🐠</span>Fish</button>
+    <button id="btn-fish" class="creature-btn active" onclick="switchCreature('fish')"><span>🐠</span>Fish</button>
     <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')"><span>🦈</span>Shark</button>
   </div>
 </model-viewer>
 
 <script>
+// تأكد يا عمر إن أسماء المجلدات على قيت هاب تبدأ بحرف كبير Animation و Models
 const DATA = {
     fish: { 
         glb: 'Models/School_of_fish.glb', 
-        iosSrc: 'Models/School_of_fish.usdz' 
+        ios: 'Models/School_of_fish.usdz' 
     },
     shark: { 
         glb: 'Models/Shark_animated.glb', 
-        iosSrc: 'Animation/Shark_animated.reality' 
+        ios: 'Animation/Shark_animated.reality' 
     }
 };
 
-let currentCreature = 'fish';
 const viewer = document.getElementById('oceanView');
 const audio = document.getElementById('sharkGrowl');
 
-// 1. إخفاء شاشة التحميل
-document.addEventListener('DOMContentLoaded', () => {
+// إخفاء التحميل
+window.addEventListener('load', () => {
     setTimeout(() => {
         document.getElementById('loading').classList.add('hidden-load');
-    }, 1000);
+    }, 800);
 });
 
-// 2. زر البداية
+// زر البداية
 document.getElementById('startBtn').addEventListener('click', () => {
     document.getElementById('splash').classList.add('splash-hide');
-    switchCreature('fish');
 });
 
-// 3. تبديل الكائنات (بدون تشغيل الصوت في المتصفح)
+// تبديل الكائنات
 function switchCreature(id) {
-    currentCreature = id;
     viewer.src = DATA[id].glb;
-    viewer.iosSrc = DATA[id].iosSrc;
+    viewer.setAttribute('ios-src', DATA[id].ios); // الطريقة الأكثر استقراراً للآيفون
     
-    // نوقف أي صوت شغال عشان ما يزعجنا في المتصفح
-    audio.pause();
-    audio.currentTime = 0;
-
-    document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-' + id).classList.add('active');
-}
-
-// 4. الحل النهائي للصوت (يشتغل فقط داخل الكاميرا)
-viewer.addEventListener('ar-status', (event) => {
-    if (event.detail.status === 'session-started') {
-        // إذا كنا داخل الـ AR والمختار هو القرش، شغل الصوت
-        if (currentCreature === 'shark') {
-            audio.play().catch(e => console.log("Audio play blocked"));
-        }
-    } else if (event.detail.status === 'not-presenting') {
-        // بمجرد إغلاق الكاميرا، الصوت يوقف فوراً
+    // إدارة الصوت: يشتغل بس مع القرش
+    if (id === 'shark') {
+        audio.play().catch(e => console.log("Audio play blocked"));
+    } else {
         audio.pause();
         audio.currentTime = 0;
     }
-});
+
+    // تحديث الأزرار
+    document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + id).classList.add('active');
+}
 </script>
 </body>
 </html>
