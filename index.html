@@ -24,7 +24,6 @@
     .creature-btn { background:rgba(2,12,24,0.85); border:1px solid rgba(26,179,200,0.3); color:var(--foam); padding:0.6rem 1rem; border-radius: 4px; font-size:0.55rem; text-transform:uppercase; cursor:pointer; }
     .creature-btn.active { border-color:var(--glow); color:var(--glow); }
 
-    /* زر الـ AR اليدوي */
     #manual-ar-link {
       position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%);
       background: var(--glow); color: var(--deep); padding: 1rem 2rem;
@@ -37,6 +36,10 @@
   </style>
 </head>
 <body>
+
+<audio id="sharkAudio" loop preload="auto">
+  <source src="Audio/SharkSound.mp3" type="audio/mpeg">
+</audio>
 
 <div id="loading"> <div style="font-size:2rem;">🐠</div> </div>
 
@@ -77,6 +80,8 @@ const DATA = {
 
 const viewer = document.getElementById('oceanView');
 const arLink = document.getElementById('manual-ar-link');
+const audio = document.getElementById('sharkAudio');
+let currentID = 'fish';
 
 window.addEventListener('load', () => {
     setTimeout(() => document.getElementById('loading').classList.add('hidden-load'), 800);
@@ -87,15 +92,31 @@ document.getElementById('startBtn').addEventListener('click', () => {
 });
 
 function switchCreature(id) {
-    // تحديث الموديل في الصفحة
+    currentID = id;
     viewer.src = DATA[id].glb;
-    
-    // تحديث رابط الـ AR اليدوي
     arLink.href = DATA[id].ios;
+    
+    // إيقاف الصوت فوراً عند التبديل لضمان عدم حدوث تداخل
+    audio.pause();
+    audio.currentTime = 0;
     
     document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-' + id).classList.add('active');
 }
+
+// ── منطق تشغيل الصوت عند الدخول للـ AR ──
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        // إذا المتصفح صار في الخلفية (يعني الـ AR فتح)
+        if (currentID === 'shark') {
+            audio.play().catch(err => console.log("Audio needs interaction"));
+        }
+    } else {
+        // إذا رجع المتصفح للواجهة (يعني المستخدم ضغط Done)
+        audio.pause();
+        audio.currentTime = 0;
+    }
+});
 </script>
 </body>
 </html>
