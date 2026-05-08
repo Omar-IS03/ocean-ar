@@ -167,7 +167,6 @@
     <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')"><span>🦈</span>Shark</button>
   </div>
 </model-viewer>
-
 <script>
 const DATA = {
     fish: { 
@@ -180,7 +179,6 @@ const DATA = {
         name: 'Swimming Shark', 
         infoImg: 'UI/SharkInfo.png',
         glb: 'Models/swimming_shark-v1-v2.glb',
-        // METADATA FRAGMENT: Forces a banner inside the iPhone AR app
         usdz: 'Models/swimming_shark-v1-v2.usdz#applePayButtonType=plain&checkoutTitle=Great%20White%20Shark&checkoutSubtitle=Tap%20to%20open%20Bio-Card&callToAction=View%20Stats'
     }
   };
@@ -199,7 +197,8 @@ const DATA = {
   });
 
   // 2. START EXPERIENCE
-  document.getElementById('startBtn').addEventListener('click', () => {
+  document.getElementById('startBtn').addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevents immediate info trigger
     document.getElementById('splash').classList.add('splash-hide');
     setTimeout(() => { 
         document.getElementById('splash').style.display = 'none'; 
@@ -228,7 +227,7 @@ const DATA = {
     document.getElementById('btn-' + id).classList.add('active');
   }
 
-  // 3. SMART INTERACTION (DRAG VS CLICK)
+  // 3. SMART INTERACTION (THE FIX)
   const viewer = document.getElementById('oceanView');
 
   viewer.addEventListener('pointerdown', (e) => {
@@ -237,19 +236,30 @@ const DATA = {
   });
 
   viewer.addEventListener('pointerup', (e) => {
+    // CRITICAL FIX: If you click a button, DON'T show the info card
+    if (e.target.closest('.creature-btn') || e.target.closest('#ar-button')) {
+        return; 
+    }
+
     const moveX = Math.abs(e.clientX - tapStartX);
     const moveY = Math.abs(e.clientY - tapStartY);
 
-    // Only show info if the finger moved less than 10 pixels (a clean tap)
+    // Only show info if it was a quick tap on the shark/background
     if (moveX < 10 && moveY < 10) {
         showInfo();
     }
   });
 
   function showInfo() {
-    const overlay = document.getElementById('imageOverlay');
-    document.getElementById('infoImg').src = DATA[currentCreature].infoImg;
-    overlay.style.display = 'flex';
+    // Safety check: only show if we are NOT on the splash screen
+    if (document.getElementById('splash').style.display === 'none') {
+        const overlay = document.getElementById('imageOverlay');
+        const img = document.getElementById('infoImg');
+        
+        // Force the path to be correct (Check your UI folder name casing!)
+        img.src = DATA[currentCreature].infoImg;
+        overlay.style.display = 'flex';
+    }
   }
 
   function hideInfo() {
