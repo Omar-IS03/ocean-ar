@@ -28,7 +28,6 @@
       transition: opacity 0.4s ease;
     }
     .hidden-load { opacity:0 !important; pointer-events:none !important; }
-
     .fish-anim { font-size:2.5rem; animation:swim 1s ease infinite alternate; }
     @keyframes swim { from{transform:translateX(-18px)} to{transform:translateX(18px)} }
     .load-label { font-size:0.58rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--teal); }
@@ -44,7 +43,6 @@
       transition: opacity 0.5s ease;
     }
     .splash-hide { opacity:0 !important; visibility: hidden !important; pointer-events:none !important; }
-
     .bubbles { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index: 1; }
     .bubble {
       position:absolute; bottom:-40px; border-radius:50%;
@@ -53,10 +51,8 @@
       animation:rise linear infinite;
     }
     @keyframes rise { to { transform:translateY(-110vh); opacity:0; } }
-
     .splash-content { position:relative; z-index:1001; text-align:center; padding: 2rem; max-width: 420px; }
     .title { font-family:'Cormorant Garamond',serif; font-size:clamp(3.2rem, 11vw, 6rem); font-weight:300; line-height:0.95; color:var(--foam); text-shadow:0 0 50px rgba(0,255,231,0.25); margin-bottom: 1.8rem;}
-    
     #startBtn {
       position:relative; background:transparent; border:1.5px solid var(--glow); color:var(--glow);
       font-family:'Space Mono',monospace; font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase;
@@ -67,7 +63,6 @@
     .hud-top { position:absolute; top:0; left:0; right:0; padding:1.5rem; display:flex; justify-content:space-between; align-items:center; z-index: 100; pointer-events: none; }
     .hud-logo { font-family:'Cormorant Garamond',serif; font-size:1.2rem; color:var(--foam); }
     .hud-logo span { color:var(--glow); font-style:italic; }
-
     #creatureSelector {
       position:fixed; bottom:2rem; left:50%; transform:translateX(-50%);
       display:flex; gap:0.8rem; z-index:150;
@@ -79,40 +74,15 @@
     }
     .creature-btn.active { border-color:var(--glow); color:var(--glow); box-shadow:0 0 15px rgba(0,255,231,0.2); }
 
-    /* ── 4. IMAGE OVERLAY (THE GLASS TABLET) ── */
+    /* ── 4. INFO OVERLAY ── */
     #imageOverlay {
       position:fixed; inset:0; z-index:2000;
       background:rgba(2,12,24,0.95);
       display:none; flex-direction:column; align-items:center; justify-content:center;
       padding:20px; backdrop-filter: blur(15px);
     }
-    #imageOverlay img {
-      max-width: 90%; max-height: 80%;
-      border: 1px solid var(--teal);
-      box-shadow: 0 0 40px rgba(0,255,231,0.2);
-    }
+    #imageOverlay img { max-width: 90%; max-height: 80%; border: 1px solid var(--teal); box-shadow: 0 0 40px rgba(0,255,231,0.2); }
     .close-hint { margin-top: 25px; font-size: 0.6rem; color: var(--teal); letter-spacing: 0.25em; text-transform: uppercase; }
-
-    /* ── 5. HOTSPOT (THE INTERACTIVE DOT) ── */
-    .Hotspot {
-      background: var(--glow);
-      border-radius: 50%;
-      width: 28px; height: 28px; border: none;
-      box-shadow: 0 0 15px var(--glow);
-      cursor: pointer; position: relative;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.2); opacity: 0.7; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .HotspotAnnotation {
-      background: rgba(2, 12, 24, 0.9); color: var(--foam);
-      padding: 6px 12px; border-radius: 4px; font-size: 11px;
-      position: absolute; top: 35px; left: 50%; transform: translateX(-50%);
-      white-space: nowrap; border: 1px solid var(--teal);
-    }
 
     #ar-button {
       position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%);
@@ -126,7 +96,7 @@
 </head>
 <body>
 
-<audio id="sharkGrowl" loop>
+<audio id="sharkGrowl">
   <source src="Audio/SharkSound.mp3" type="audio/mpeg">
 </audio>
 
@@ -160,14 +130,9 @@
   ar-placement="floor" 
   camera-controls 
   autoplay
-  auto-rotate 
   shadow-intensity="1">
   
   <button slot="ar-button" id="ar-button">ENTER AR WORLD</button>
-
-  <button class="Hotspot" slot="hotspot-info" data-position="0m 0.5m 0.5m" data-normal="0m 0m 1m">
-    <div class="HotspotAnnotation">Scan Creature</div>
-  </button>
 
   <div id="creatureSelector">
     <button id="btn-fish" class="creature-btn" onclick="switchCreature('fish')"><span>🐠</span>Fish</button>
@@ -176,28 +141,29 @@
 </model-viewer>
 
 <script>
-  // Configuration Data
-  const DATA = {
+/**
+ * ملاحظة هامة لعمر: 
+ * تأكد أن أسماء المجلدات والملفات على GitHub تطابق الحروف الكبيرة هنا بالضبط.
+ * إذا كان المجلد اسمه Animation (كبير)، اكتبه هنا Animation.
+ */
+const DATA = {
     fish: { 
         name: 'School of Fish', 
         infoImg: 'UI/FishInfo.png',
-        glb: 'Models/school_of_fish.glb', 
-        iosSrc: 'Models/school_of_fish.usdz' 
+        glb: 'Models/School_of_fish.glb', 
+        iosSrc: 'Models/School_of_fish.usdz' 
     },
     shark: { 
         name: 'Swimming Shark', 
         infoImg: 'UI/SharkInfo.png',
-        glb: 'Models/shark_animated.glb', 
-        iosSrc: 'Animation/shark_animated.reality' // Path updated for capitalization
+        glb: 'Models/Shark_animated.glb', 
+        iosSrc: 'Animation/Shark_animated.reality' // الحرف الأول كبير كما طلبت
     }
   };
 
   let currentCreature = 'fish';
   let tapStartX, tapStartY;
-  const viewer = document.getElementById('oceanView');
-  const audio = document.getElementById('sharkGrowl');
 
-  // 1. CLEAR LOADER
   document.addEventListener('DOMContentLoaded', () => {
     makeBubbles();
     setTimeout(() => {
@@ -207,46 +173,15 @@
     }, 1200);
   });
 
-  // 2. START EXPERIENCE & SPLASH HIDE
   document.getElementById('startBtn').addEventListener('click', (e) => {
     e.stopPropagation(); 
     document.getElementById('splash').classList.add('splash-hide');
     setTimeout(() => { 
         document.getElementById('splash').style.display = 'none'; 
-        switchCreature('fish'); 
+        switchCreature('fish'); // البداية بالسمك
     }, 500);
   });
 
-  // 3. SWITCH CREATURE LOGIC (Includes audio control)
-  function switchCreature(id) {
-    currentCreature = id;
-    viewer.src = DATA[id].glb;
-    viewer.iosSrc = DATA[id].iosSrc; 
-    
-    // Manage Audio when switching
-    if (id === 'shark') {
-        audio.loop = true;
-        // The audio will only play IF we are already in AR (handled by listener below)
-    } else {
-        audio.pause();
-        audio.currentTime = 0;
-    }
-    
-    document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-' + id).classList.add('active');
-  }
-
-  // 4. AR STATUS LISTENER (Play audio ONLY in AR mode for Shark)
-  viewer.addEventListener('ar-status', (event) => {
-    if (event.detail.status === 'session-started' && currentCreature === 'shark') {
-        audio.play().catch(err => console.log("User interaction required for audio"));
-    } else if (event.detail.status === 'not-presenting') {
-        audio.pause();
-        audio.currentTime = 0;
-    }
-  });
-
-  // 5. BUBBLE EFFECT
   function makeBubbles() {
     const el = document.getElementById('bubblesEl');
     for (let i = 0; i < 15; i++) {
@@ -258,36 +193,44 @@
     }
   }
 
-  // 6. SMART UI INTERACTION (TAPPING)
-  viewer.addEventListener('pointerdown', (e) => {
-    tapStartX = e.clientX;
-    tapStartY = e.clientY;
-  });
+  function switchCreature(id) {
+    const viewer = document.getElementById('oceanView');
+    const audio = document.getElementById('sharkGrowl');
+    
+    currentCreature = id;
+    viewer.src = DATA[id].glb;
+    viewer.iosSrc = DATA[id].iosSrc; 
 
-  viewer.addEventListener('pointerup', (e) => {
-    if (e.target.closest('.creature-btn') || e.target.closest('#ar-button') || e.target.closest('.Hotspot')) {
-        return; 
+    // منطق الصوت المطور
+    if (id === 'shark') {
+        audio.loop = true; // تفعيل التكرار
+        audio.play().catch(e => console.log("Audio play failed"));
+    } else {
+        audio.pause();
+        audio.currentTime = 0;
     }
+    
+    document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + id).classList.add('active');
+  }
+
+  const viewer = document.getElementById('oceanView');
+  viewer.addEventListener('pointerdown', (e) => { tapStartX = e.clientX; tapStartY = e.clientY; });
+  viewer.addEventListener('pointerup', (e) => {
+    if (e.target.closest('.creature-btn') || e.target.closest('#ar-button')) return;
     const moveX = Math.abs(e.clientX - tapStartX);
     const moveY = Math.abs(e.clientY - tapStartY);
-
-    if (moveX < 10 && moveY < 10) {
-        showInfo();
-    }
+    if (moveX < 10 && moveY < 10) showInfo();
   });
 
   function showInfo() {
     if (document.getElementById('splash').style.display === 'none') {
         const overlay = document.getElementById('imageOverlay');
-        const img = document.getElementById('infoImg');
-        img.src = DATA[currentCreature].infoImg;
+        document.getElementById('infoImg').src = DATA[currentCreature].infoImg;
         overlay.style.display = 'flex';
     }
   }
-
-  function hideInfo() {
-    document.getElementById('imageOverlay').style.display = 'none';
-  }
+  function hideInfo() { document.getElementById('imageOverlay').style.display = 'none'; }
 </script>
 </body>
 </html>
