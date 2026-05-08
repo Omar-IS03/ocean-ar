@@ -75,17 +75,16 @@
 </model-viewer>
 
 <script>
-// استخدمنا هنا الروابط الكاملة التي تعمل في متصفحك
 const DATA = {
     fish: { 
         info: 'UI/FishInfo.png', 
         glb: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.glb', 
-        ios: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.usdz' 
+        ios: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.usdz?v=' + Date.now()
     },
     shark: { 
         info: 'UI/SharkInfo.png', 
         glb: 'https://omar-is03.github.io/ocean-ar/Models/shark_animated.glb', 
-        ios: 'https://omar-is03.github.io/ocean-ar/Animation/shark_animated.reality' 
+        ios: 'https://omar-is03.github.io/ocean-ar/Animation/shark_animated.reality?v=' + Date.now()
     }
 };
 
@@ -93,7 +92,32 @@ const viewer = document.getElementById('oceanView');
 let current = 'fish';
 let tapX, tapY;
 
+// دالة التبديل
+function switchCreature(id) {
+    current = id;
+    
+    // تحديث الموديل في الصفحة
+    viewer.src = DATA[id].glb;
+    
+    // إجبار زر الـ AR على تحديث الرابط بنسخة جديدة تماماً
+    const newIosSrc = DATA[id].ios;
+    viewer.setAttribute('ios-src', newIosSrc);
+    
+    console.log("Switching to: " + newIosSrc);
+
+    document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + id).classList.add('active');
+}
+
+// ── مهم جداً: حل مشكلة "تعذر عرض العنصر" ──
+viewer.addEventListener('ar-status', (event) => {
+    if (event.detail.status === 'failed') {
+        alert("سفاري معلق، يرجى تحديث الصفحة أو فتحها في تبويب خاص (Private)");
+    }
+});
+
 window.addEventListener('load', () => {
+    // تشغيل الفقاعات
     const el = document.getElementById('bubblesEl');
     for (let i = 0; i < 15; i++) {
         const b = document.createElement('div');
@@ -107,14 +131,6 @@ window.addEventListener('load', () => {
 document.getElementById('startBtn').addEventListener('click', () => {
     document.getElementById('splash').classList.add('splash-hide');
 });
-
-function switchCreature(id) {
-    current = id;
-    viewer.src = DATA[id].glb;
-    viewer.setAttribute('ios-src', DATA[id].ios);
-    document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-' + id).classList.add('active');
-}
 
 viewer.addEventListener('pointerdown', e => { tapX = e.clientX; tapY = e.clientY; });
 viewer.addEventListener('pointerup', e => {
