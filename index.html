@@ -29,7 +29,6 @@
     .creature-btn { background:rgba(2,12,24,0.85); border:1px solid rgba(26,179,200,0.3); color:var(--foam); padding:0.6rem 1rem; border-radius: 4px; font-size:0.55rem; text-transform:uppercase; cursor:pointer; }
     .creature-btn.active { border-color:var(--glow); color:var(--glow); }
 
-    /* INFO OVERLAY */
     #imageOverlay { position:fixed; inset:0; z-index:2000; background:rgba(2,12,24,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; backdrop-filter: blur(15px); }
     #imageOverlay img { max-width: 90%; max-height: 80%; border: 1px solid var(--teal); }
 
@@ -62,8 +61,8 @@
 
 <model-viewer 
   id="oceanView"
-  src="Models/school_of_fish.glb"
-  ios-src="Models/school_of_fish.usdz"
+  src="https://omar-is03.github.io/ocean-ar/Models/school_of_fish.glb"
+  ios-src="https://omar-is03.github.io/ocean-ar/Models/school_of_fish.usdz"
   ar ar-modes="quick-look webxr" 
   ar-placement="floor" 
   camera-controls 
@@ -76,16 +75,24 @@
 </model-viewer>
 
 <script>
+// استخدمنا هنا الروابط الكاملة التي تعمل في متصفحك
 const DATA = {
-    fish: { info: 'UI/FishInfo.png', glb: 'Models/school_of_fish.glb', ios: 'Models/school_of_fish.usdz' },
-    shark: { info: 'UI/SharkInfo.png', glb: 'Models/shark_animated.glb', ios: 'Animation/shark_animated.reality' }
+    fish: { 
+        info: 'UI/FishInfo.png', 
+        glb: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.glb', 
+        ios: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.usdz' 
+    },
+    shark: { 
+        info: 'UI/SharkInfo.png', 
+        glb: 'https://omar-is03.github.io/ocean-ar/Models/shark_animated.glb', 
+        ios: 'https://omar-is03.github.io/ocean-ar/Animation/shark_animated.reality' 
+    }
 };
 
 const viewer = document.getElementById('oceanView');
 let current = 'fish';
 let tapX, tapY;
 
-// فقاعات وتحميل
 window.addEventListener('load', () => {
     const el = document.getElementById('bubblesEl');
     for (let i = 0; i < 15; i++) {
@@ -101,7 +108,6 @@ document.getElementById('startBtn').addEventListener('click', () => {
     document.getElementById('splash').classList.add('splash-hide');
 });
 
-// التبديل الصافي (بدون أكواد صوت)
 function switchCreature(id) {
     current = id;
     viewer.src = DATA[id].glb;
@@ -110,7 +116,6 @@ function switchCreature(id) {
     document.getElementById('btn-' + id).classList.add('active');
 }
 
-// اللوحة المعلوماتية
 viewer.addEventListener('pointerdown', e => { tapX = e.clientX; tapY = e.clientY; });
 viewer.addEventListener('pointerup', e => {
     if (e.target.closest('.creature-btn') || e.target.closest('#ar-button')) return;
