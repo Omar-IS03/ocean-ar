@@ -93,7 +93,7 @@
     }
     .close-hint { margin-top: 25px; font-size: 0.6rem; color: var(--teal); letter-spacing: 0.25em; text-transform: uppercase; }
 
-    /* ── 5. HOTSPOT (THE INTERACTIVE DOT) ── */
+    /* ── 5. HOTSPOT ── */
     .Hotspot {
       background: var(--glow); border-radius: 50%; width: 28px; height: 28px; border: none;
       box-shadow: 0 0 15px var(--glow); cursor: pointer; position: relative; animation: pulse 2s infinite;
@@ -146,8 +146,8 @@
 
 <model-viewer 
   id="oceanView"
-  src="Models/School_of_fish.glb"
-  ios-src="Models/School_of_fish.usdz"
+  src="Models/school_of_fish.glb"
+  ios-src="Models/school_of_fish.usdz"
   ar 
   ar-modes="quick-look webxr scene-viewer" 
   ar-placement="floor" 
@@ -168,27 +168,28 @@
 </model-viewer>
 
 <script>
+// المسارات مطابقة حرفياً لملفاتك في GitHub
 const DATA = {
     fish: { 
         name: 'School of Fish', 
         infoImg: 'UI/FishInfo.png',
-        glb: 'Models/School_of_fish.glb', 
-        ios: 'Models/School_of_fish.usdz' 
+        glb: 'Models/school_of_fish.glb', 
+        ios: 'Models/school_of_fish.usdz' 
     },
     shark: { 
         name: 'Swimming Shark', 
         infoImg: 'UI/SharkInfo.png',
-        glb: 'Models/Shark_animated.glb', 
-        ios: 'Animation/Shark_animated.reality' 
+        glb: 'Models/shark_animated.glb', 
+        ios: 'Animation/shark_animated.reality' 
     }
 };
 
-const viewer = document.getElementById('oceanView');
-const audio = document.getElementById('sharkGrowl');
 let currentCreature = 'fish';
 let tapStartX, tapStartY;
+const viewer = document.getElementById('oceanView');
+const audio = document.getElementById('sharkGrowl');
 
-// 1. منطق الفقاعات (كان محذوف في كودك ورجعناه)
+// 1. منطق الفقاعات
 function makeBubbles() {
     const el = document.getElementById('bubblesEl');
     if (!el) return;
@@ -206,8 +207,10 @@ window.addEventListener('load', () => {
     makeBubbles();
     setTimeout(() => {
         const loader = document.getElementById('loading');
-        loader.classList.add('hidden-load');
-        setTimeout(() => { loader.style.display = 'none'; }, 400);
+        if (loader) {
+            loader.classList.add('hidden-load');
+            setTimeout(() => { loader.style.display = 'none'; }, 400);
+        }
     }, 1200);
 });
 
@@ -217,18 +220,16 @@ document.getElementById('startBtn').addEventListener('click', (e) => {
     setTimeout(() => { 
         document.getElementById('splash').style.display = 'none'; 
     }, 500);
-    // تشغيل السمك كخيار افتراضي عند البداية
     switchCreature('fish');
 });
 
-// 3. دالة التبديل (الأنيميشن والصوت)
+// 3. التبديل والصوت
 function switchCreature(id) {
     currentCreature = id;
-    
     viewer.src = DATA[id].glb;
     viewer.setAttribute('ios-src', DATA[id].ios);
     
-    // الصرامة التامة: الصوت يوقف خارج الـ AR
+    // إيقاف الصوت خارج الـ AR فوراً
     audio.pause();
     audio.currentTime = 0;
     
@@ -236,11 +237,11 @@ function switchCreature(id) {
     document.getElementById('btn-' + id).classList.add('active');
 }
 
-// 4. التحكم بالصوت داخل الـ AR فقط
+// التحكم بالصوت: يشتغل فقط داخل الـ AR
 viewer.addEventListener('ar-status', (event) => {
     if (event.detail.status === 'session-started') {
         if (currentCreature === 'shark') {
-            audio.play().catch(e => console.log("Audio blocked by iOS AR mode"));
+            audio.play().catch(e => console.log("Audio waiting for user link..."));
         }
     } else if (event.detail.status === 'not-presenting') {
         audio.pause();
@@ -248,7 +249,7 @@ viewer.addEventListener('ar-status', (event) => {
     }
 });
 
-// 5. التفاعل واللوحة الزجاجية (كانت محذوفة بالكامل ورجعناها)
+// 4. التفاعل مع اللوحة الزجاجية
 viewer.addEventListener('pointerdown', (e) => {
     tapStartX = e.clientX;
     tapStartY = e.clientY;
@@ -268,7 +269,6 @@ function showInfo() {
         overlay.style.display = 'flex';
     }
 }
-
 function hideInfo() {
     document.getElementById('imageOverlay').style.display = 'none';
 }
