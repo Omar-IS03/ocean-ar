@@ -79,7 +79,7 @@
     }
     .creature-btn.active { border-color:var(--glow); color:var(--glow); box-shadow:0 0 15px rgba(0,255,231,0.2); }
 
-    /* ── 4. IMAGE OVERLAY (THE GLASS TABLET) ── */
+    /* ── 4. IMAGE OVERLAY ── */
     #imageOverlay {
       position:fixed; inset:0; z-index:2000;
       background:rgba(2,12,24,0.95);
@@ -93,27 +93,6 @@
     }
     .close-hint { margin-top: 25px; font-size: 0.6rem; color: var(--teal); letter-spacing: 0.25em; text-transform: uppercase; }
 
-    /* ── 5. HOTSPOT (THE INTERACTIVE DOT) ── */
-    .Hotspot {
-      background: var(--glow);
-      border-radius: 50%;
-      width: 28px; height: 28px; border: none;
-      box-shadow: 0 0 15px var(--glow);
-      cursor: pointer; position: relative;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.2); opacity: 0.7; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    .HotspotAnnotation {
-      background: rgba(2, 12, 24, 0.9); color: var(--foam);
-      padding: 6px 12px; border-radius: 4px; font-size: 11px;
-      position: absolute; top: 35px; left: 50%; transform: translateX(-50%);
-      white-space: nowrap; border: 1px solid var(--teal);
-    }
-
     #ar-button {
       position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%);
       background: var(--glow); color: var(--deep); border: none;
@@ -126,7 +105,7 @@
 </head>
 <body>
 
-<audio id="sharkGrowl" loop>
+<audio id="sharkGrowl">
   <source src="Audio/SharkSound.mp3" type="audio/mpeg">
 </audio>
 
@@ -165,10 +144,6 @@
   
   <button slot="ar-button" id="ar-button">ENTER AR WORLD</button>
 
-  <button class="Hotspot" slot="hotspot-info" data-position="0m 0.5m 0.5m" data-normal="0m 0m 1m">
-    <div class="HotspotAnnotation">Scan Creature</div>
-  </button>
-
   <div id="creatureSelector">
     <button id="btn-fish" class="creature-btn" onclick="switchCreature('fish')"><span>🐠</span>Fish</button>
     <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')"><span>🦈</span>Shark</button>
@@ -176,6 +151,7 @@
 </model-viewer>
 
 <script>
+// Data object with Case Sensitive paths
 const DATA = {
     fish: { 
         name: 'School of Fish', 
@@ -187,14 +163,14 @@ const DATA = {
         name: 'Swimming Shark', 
         infoImg: 'UI/SharkInfo.png',
         glb: 'Models/shark_animated.glb', 
-        iosSrc: 'Animation/shark_animated.reality' // تم تحديث المسار للحرف الكبير والملف الجديد
+        iosSrc: 'Animation/shark_animated.reality' 
     }
   };
 
   let currentCreature = 'fish';
   let tapStartX, tapStartY;
 
-  // 1. CLEAR LOADER
+  // 1. Loading logic
   document.addEventListener('DOMContentLoaded', () => {
     makeBubbles();
     setTimeout(() => {
@@ -204,12 +180,16 @@ const DATA = {
     }, 1200);
   });
 
-  // 2. START EXPERIENCE & AUDIO
+  // 2. Start Experience & AUDIO LOOP FIX
   document.getElementById('startBtn').addEventListener('click', (e) => {
     e.stopPropagation(); 
     
-    // Trigger the shark sound when they click Begin
-    document.getElementById('sharkGrowl').play().catch(err => console.log("Audio waiting for user..."));
+    // Explicitly set Loop to True to solve the single-play issue
+    const audio = document.getElementById('sharkGrowl');
+    audio.loop = true; 
+    audio.play().then(() => {
+        console.log("Audio started looping successfully.");
+    }).catch(err => console.log("Audio blocked by browser policy."));
 
     document.getElementById('splash').classList.add('splash-hide');
     setTimeout(() => { 
@@ -233,13 +213,13 @@ const DATA = {
     const viewer = document.getElementById('oceanView');
     currentCreature = id;
     viewer.src = DATA[id].glb;
-    viewer.iosSrc = DATA[id].iosSrc; // يستخدم الآن iosSrc من الكائن أعلاه
+    viewer.iosSrc = DATA[id].iosSrc;
     
     document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-' + id).classList.add('active');
   }
 
-  // 3. SMART INTERACTION
+  // 3. Interaction logic
   const viewer = document.getElementById('oceanView');
 
   viewer.addEventListener('pointerdown', (e) => {
@@ -248,16 +228,12 @@ const DATA = {
   });
 
   viewer.addEventListener('pointerup', (e) => {
-    if (e.target.closest('.creature-btn') || e.target.closest('#ar-button') || e.target.closest('.Hotspot')) {
-        return; 
-    }
+    if (e.target.closest('.creature-btn') || e.target.closest('#ar-button')) return;
 
     const moveX = Math.abs(e.clientX - tapStartX);
     const moveY = Math.abs(e.clientY - tapStartY);
 
-    if (moveX < 10 && moveY < 10) {
-        showInfo();
-    }
+    if (moveX < 10 && moveY < 10) showInfo();
   });
 
   function showInfo() {
