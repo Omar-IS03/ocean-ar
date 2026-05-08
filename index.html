@@ -146,6 +146,8 @@
 
 <model-viewer 
   id="oceanView"
+  src="Models/school_of_fish.glb"
+  ios-src="Models/school_of_fish.usdz"
   ar 
   ar-modes="quick-look webxr scene-viewer" 
   ar-placement="floor" 
@@ -160,17 +162,12 @@
   </button>
 
   <div id="creatureSelector">
-    <button id="btn-fish" class="creature-btn" onclick="switchCreature('fish')"><span>🐠</span>Fish</button>
+    <button id="btn-fish" class="creature-btn active" onclick="switchCreature('fish')"><span>🐠</span>Fish</button>
     <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')"><span>🦈</span>Shark</button>
   </div>
 </model-viewer>
 
 <script>
-/**
- * المسارات هنا مطابقة حرفياً للملفات اللي رفعتها لي:
- * المجلدات فقط تبدأ بكابيتال (Models, Animation, UI)
- * أسماء الملفات كما رفعتها بالضبط (shark_animated سمول، SharkInfo كابيتال)
- */
 const DATA = {
     fish: { 
         name: 'School of Fish', 
@@ -182,7 +179,7 @@ const DATA = {
         name: 'Swimming Shark', 
         infoImg: 'UI/SharkInfo.png',
         glb: 'Models/shark_animated.glb', 
-        ios: 'Animation/shark_animated.reality' // هنا السر! استدعاء ملف الرياليتي للحركة
+        ios: 'Animation/shark_animated.reality' 
     }
   };
 
@@ -191,7 +188,6 @@ const DATA = {
   const viewer = document.getElementById('oceanView');
   const audio = document.getElementById('sharkGrowl');
 
-  // 1. CLEAR LOADER
   document.addEventListener('DOMContentLoaded', () => {
     makeBubbles();
     setTimeout(() => {
@@ -201,13 +197,11 @@ const DATA = {
     }, 1200);
   });
 
-  // 2. START EXPERIENCE
   document.getElementById('startBtn').addEventListener('click', (e) => {
     e.stopPropagation(); 
     document.getElementById('splash').classList.add('splash-hide');
     setTimeout(() => { 
         document.getElementById('splash').style.display = 'none'; 
-        switchCreature('fish'); 
     }, 500);
   });
 
@@ -225,9 +219,9 @@ const DATA = {
   function switchCreature(id) {
     currentCreature = id;
     viewer.src = DATA[id].glb;
-    viewer.setAttribute('ios-src', DATA[id].ios);
+    viewer.iosSrc = DATA[id].ios; // استخدام الخاصية مباشرة بدل setAttribute لتجنب التعليق
     
-    // إيقاف الصوت خارج الـ AR
+    // الصرامة التامة: الصوت مستحيل يشتغل برا الـ AR
     audio.pause();
     audio.currentTime = 0;
     
@@ -235,19 +229,19 @@ const DATA = {
     document.getElementById('btn-' + id).classList.add('active');
   }
 
-  // التحكم بالصوت داخل الـ AR فقط لمنع الإزعاج والكراش
+  // هنا المربط: الصوت يشتغل *فقط* إذا فتحت الكاميرا
   viewer.addEventListener('ar-status', (event) => {
     if (event.detail.status === 'session-started') {
         if (currentCreature === 'shark') {
-            audio.play().catch(e => console.log("Audio waiting for user interaction"));
+            audio.play().catch(e => console.log("Audio blocked by iOS AR mode"));
         }
     } else if (event.detail.status === 'not-presenting') {
+        // إذا قفلت الـ AR يطفي الصوت
         audio.pause();
         audio.currentTime = 0;
     }
   });
 
-  // 3. INTERACTION LOGIC (GLASS TABLET)
   viewer.addEventListener('pointerdown', (e) => {
     tapStartX = e.clientX;
     tapStartY = e.clientY;
