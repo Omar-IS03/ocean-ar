@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-  <title>OceanAR — KAU Project</title>
+  <title>OceanAR — Final Stable</title>
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Space+Mono:wght@400;700&display=swap');
     :root { --deep: #020c18; --teal: #1ab3c8; --foam: #a8f0f5; --glow: #00ffe7; }
-    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family:'Space Mono',monospace; background:var(--deep); overflow:hidden; height: 100vh; width: 100vw; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Space Mono',monospace; background:var(--deep); overflow:hidden; height: 100vh; }
 
-    #loading { position:fixed; inset:0; z-index:9999; background:var(--deep); display:flex; flex-direction:column; align-items:center; justify-content:center; transition: 0.4s; }
+    #loading { position:fixed; inset:0; z-index:9999; background:var(--deep); display:flex; justify-content:center; align-items:center; transition: 0.4s; }
     .hidden-load { opacity:0 !important; pointer-events:none !important; }
     
     #splash { position:fixed; inset:0; z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(ellipse at 50% 70%, #0a3a5a 0%, #020c18 70%); transition: 0.5s; }
@@ -24,18 +24,21 @@
     .creature-btn { background:rgba(2,12,24,0.85); border:1px solid rgba(26,179,200,0.3); color:var(--foam); padding:0.6rem 1rem; border-radius: 4px; font-size:0.55rem; text-transform:uppercase; cursor:pointer; }
     .creature-btn.active { border-color:var(--glow); color:var(--glow); }
 
-    #imageOverlay { position:fixed; inset:0; z-index:2000; background:rgba(2,12,24,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; backdrop-filter: blur(15px); }
-    #imageOverlay img { max-width: 90%; max-height: 80%; border: 1px solid var(--teal); }
+    /* زر الـ AR اليدوي */
+    #manual-ar-link {
+      position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%);
+      background: var(--glow); color: var(--deep); padding: 1rem 2rem;
+      font-weight: 700; border-radius: 4px; text-decoration: none;
+      font-size: 0.8rem; text-transform: uppercase; z-index: 1000;
+      display: inline-block;
+    }
 
-    #ar-button { position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%); background: var(--glow); color: var(--deep); border: none; padding: 1rem 2rem; font-weight: 700; border-radius: 4px; cursor: pointer; z-index:100; }
     model-viewer { width: 100%; height: 100%; }
   </style>
 </head>
 <body>
 
-<div id="loading">
-  <div style="font-size:2rem;">🐠</div>
-</div>
+<div id="loading"> <div style="font-size:2rem;">🐠</div> </div>
 
 <div id="splash">
   <div class="splash-content">
@@ -44,19 +47,16 @@
   </div>
 </div>
 
-<div id="imageOverlay" onclick="this.style.display='none'">
-    <img id="infoImg" src="" alt="Info">
-</div>
+<a id="manual-ar-link" rel="ar" href="https://omar-is03.github.io/ocean-ar/Models/school_of_fish.usdz">
+  ENTER AR WORLD
+</a>
 
 <model-viewer 
   id="oceanView"
   src="https://omar-is03.github.io/ocean-ar/Models/school_of_fish.glb"
-  ios-src="https://omar-is03.github.io/ocean-ar/Models/school_of_fish.usdz"
-  ar ar-modes="quick-look webxr" 
-  ar-placement="floor" 
+  ar-modes="webxr scene-viewer" 
   camera-controls 
   autoplay>
-  <button slot="ar-button" id="ar-button">ENTER AR</button>
   <div id="creatureSelector">
     <button id="btn-fish" class="creature-btn active" onclick="switchCreature('fish')">🐠 Fish</button>
     <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')">🦈 Shark</button>
@@ -64,23 +64,19 @@
 </model-viewer>
 
 <script>
-// الروابط المطلقة والنظيفة (بدون ?v= عشان الآيفون ما يضيع)
 const DATA = {
     fish: { 
-        info: 'UI/FishInfo.png', 
         glb: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.glb', 
         ios: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.usdz' 
     },
     shark: { 
-        info: 'UI/SharkInfo.png', 
         glb: 'https://omar-is03.github.io/ocean-ar/Models/shark_animated.glb', 
         ios: 'https://omar-is03.github.io/ocean-ar/Animation/shark_animated.reality' 
     }
 };
 
 const viewer = document.getElementById('oceanView');
-let current = 'fish';
-let tapX, tapY;
+const arLink = document.getElementById('manual-ar-link');
 
 window.addEventListener('load', () => {
     setTimeout(() => document.getElementById('loading').classList.add('hidden-load'), 800);
@@ -91,22 +87,15 @@ document.getElementById('startBtn').addEventListener('click', () => {
 });
 
 function switchCreature(id) {
-    current = id;
+    // تحديث الموديل في الصفحة
     viewer.src = DATA[id].glb;
-    viewer.setAttribute('ios-src', DATA[id].ios);
+    
+    // تحديث رابط الـ AR اليدوي
+    arLink.href = DATA[id].ios;
     
     document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-' + id).classList.add('active');
 }
-
-viewer.addEventListener('pointerdown', e => { tapX = e.clientX; tapY = e.clientY; });
-viewer.addEventListener('pointerup', e => {
-    if (e.target.closest('.creature-btn') || e.target.closest('#ar-button')) return;
-    if (Math.abs(e.clientX - tapX) < 10 && Math.abs(e.clientY - tapY) < 10) {
-        document.getElementById('infoImg').src = DATA[current].info;
-        document.getElementById('imageOverlay').style.display = 'flex';
-    }
-});
 </script>
 </body>
 </html>
