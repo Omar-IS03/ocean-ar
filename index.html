@@ -70,7 +70,7 @@
     .hud-logo { font-family:'Cormorant Garamond',serif; font-size:1.2rem; color:var(--foam); }
     .hud-logo span { color:var(--glow); font-style:italic; }
 
-    /* ── 4. SELECTOR ── */
+    /* ── 4. SELECTOR (Cleaned Up) ── */
     #creatureSelector {
       position:fixed; bottom:2rem; left:50%; transform:translateX(-50%);
       display:flex; gap:0.8rem; z-index:150;
@@ -83,28 +83,29 @@
     .creature-btn.active { border-color:var(--glow); color:var(--glow); box-shadow:0 0 15px rgba(0,255,231,0.2); }
     .creature-btn span { font-size:1.4rem; }
 
-    /* ── 5. AR BUTTON ── */
+    /* ── 5. NEW IMAGE OVERLAY ── */
+    #imageOverlay {
+      position:fixed; inset:0; z-index:2000;
+      background:rgba(2,12,24,0.92);
+      display:none; /* Hidden by default */
+      flex-direction:column; align-items:center; justify-content:center;
+      padding:20px; backdrop-filter: blur(15px);
+      transition: opacity 0.4s ease;
+    }
+    #imageOverlay img {
+      max-width: 90%; max-height: 70%;
+      border: 1px solid var(--teal);
+      box-shadow: 0 0 30px rgba(0,255,231,0.15);
+    }
+    .close-hint { margin-top: 20px; font-size: 0.6rem; color: var(--teal); letter-spacing: 0.2em; text-transform: uppercase; }
+
+    /* ── 6. AR BUTTON ── */
     #ar-button {
       position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%);
       background: var(--glow); color: var(--deep); border: none;
       padding: 1rem 2rem; font-family:'Space Mono',monospace; font-weight: 700; letter-spacing: 0.15em;
       text-transform: uppercase; border-radius: 2px; cursor: pointer; white-space: nowrap;
     }
-
-    /* ── 6. INFO CARD ── */
-    #infoCard {
-      position:fixed; bottom:-100%; left:50%; transform:translateX(-50%);
-      width:min(420px,93vw); z-index:500; transition:bottom 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    #infoCard.visible { bottom: 1.5rem; }
-    .card-wrap {
-      background: linear-gradient(135deg,rgba(10,37,64,0.97),rgba(2,12,24,0.97));
-      border: 1px solid rgba(26,179,200,0.25); padding: 1.5rem; backdrop-filter: blur(20px);
-    }
-    .card-name { font-family:'Cormorant Garamond',serif; font-size:1.9rem; color:var(--foam); }
-    .card-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; margin: 1rem 0; }
-    .stat label { display:block; font-size:0.45rem; color:var(--teal); text-transform:uppercase; }
-    .stat value { font-size:0.65rem; color:var(--foam); }
 
     /* ── 7. ENGINE ── */
     model-viewer { width: 100%; height: 100%; background-color: var(--deep); }
@@ -126,6 +127,11 @@
   </div>
 </div>
 
+<div id="imageOverlay" onclick="hideInfo()">
+    <img id="infoImg" src="" alt="Creature Information">
+    <p class="close-hint">Tap anywhere to dismiss</p>
+</div>
+
 <div class="hud-top">
     <div class="hud-logo">Ocean<span>AR</span></div>
     <div style="font-size:0.5rem; letter-spacing:0.18em; color:var(--teal);">✦ MARKERLESS MODE</div>
@@ -142,46 +148,30 @@
   <div id="creatureSelector">
     <button id="btn-fish" class="creature-btn" onclick="switchCreature('fish')"><span>🐠</span>Fish</button>
     <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')"><span>🦈</span>Shark</button>
-    <button class="creature-btn" onclick="toggleInfo()"><span>✦</span>Info</button>
-  </div>
-</model-viewer>
-
-<div id="infoCard">
-  <div class="card-wrap">
-    <div class="card-name" id="cName">...</div>
-    <div class="card-grid">
-        <div class="stat"><label>Habitat</label><value id="cHab">...</value></div>
-        <div class="stat"><label>Diet</label><value id="cDiet">...</value></div>
     </div>
-    <p id="cFact" style="font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.9rem; margin-bottom:1.2rem;"></p>
-    <button onclick="toggleInfo()" style="width:100%; background:transparent; border:1px solid var(--teal); color:var(--teal); padding:10px; font-size:0.5rem; letter-spacing:0.2em; cursor:pointer;">DISMISS</button>
-  </div>
-</div>
+</model-viewer>
 
 <script>
 const DATA = {
     fish: { 
         name: 'School of Fish', 
-        hab: 'Coral Reefs', 
-        diet: 'Plankton', 
-        fact: 'Fish school in tight formations to confuse predators.', 
+        infoImg: 'UI/FishInfo.png', // You'll need to create this one!
         glb: 'models/school_of_fish.glb', 
         usdz: 'models/school_of_fish.usdz' 
     },
     shark: { 
         name: 'Swimming Shark', 
-        hab: 'Open Ocean', 
-        diet: 'Fish, Rays, Marine Mammals', 
-        fact: 'Sharks use specialized electroreceptors to detect the tiny electrical pulses of a prey’s heartbeat.', 
-        // THESE NAMES MUST BE EXACT
+        infoImg: 'UI/SharkInfo.png', // Points to your uploaded screenshot
         glb: 'Models/swimming_shark-v1-v2.glb',
         usdz: 'Models/swimming_shark-v1-v2.usdz'
     }
   };
+
+  let currentCreature = 'fish';
+
   // 1. FAST LOADER CLEAR
   document.addEventListener('DOMContentLoaded', () => {
     makeBubbles();
-    // Drop the loader instantly so the splash screen works
     setTimeout(() => {
         const loader = document.getElementById('loading');
         loader.classList.add('hidden-load');
@@ -196,8 +186,6 @@ const DATA = {
   const enterOcean = (e) => {
     e.preventDefault();
     splash.classList.add('splash-hide');
-    
-    // Wait for splash to fade, then load the Fish
     setTimeout(() => { 
         splash.style.display = 'none'; 
         switchCreature('fish'); 
@@ -221,23 +209,34 @@ const DATA = {
 
   function switchCreature(id) {
     const viewer = document.getElementById('oceanView');
+    currentCreature = id;
     const d = DATA[id];
     
-    // Injecting the source files dynamically
     viewer.src = d.glb;
     viewer.iosSrc = d.usdz;
-    
-    document.getElementById('cName').innerText = d.name;
-    document.getElementById('cHab').innerText = d.hab;
-    document.getElementById('cDiet').innerText = d.diet;
-    document.getElementById('cFact').innerText = d.fact;
     
     document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-' + id).classList.add('active');
   }
 
-  function toggleInfo() {
-    document.getElementById('infoCard').classList.toggle('visible');
+  // 4. THE INTERACTIVE TRIGGER
+  const viewer = document.getElementById('oceanView');
+  viewer.addEventListener('click', (event) => {
+    // Only trigger if they click the 3D model, not the UI buttons
+    if (event.target.tagName === 'MODEL-VIEWER') {
+        showInfo();
+    }
+  });
+
+  function showInfo() {
+    const overlay = document.getElementById('imageOverlay');
+    const img = document.getElementById('infoImg');
+    img.src = DATA[currentCreature].infoImg;
+    overlay.style.display = 'flex';
+  }
+
+  function hideInfo() {
+    document.getElementById('imageOverlay').style.display = 'none';
   }
 </script>
 </body>
