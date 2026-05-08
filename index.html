@@ -181,13 +181,13 @@ const DATA = {
         name: 'School of Fish', 
         infoImg: 'UI/FishInfo.png',
         glb: 'Models/school_of_fish.glb', 
-        usdz: 'Models/school_of_fish.usdz' 
+        iosSrc: 'Models/school_of_fish.usdz' 
     },
     shark: { 
         name: 'Swimming Shark', 
         infoImg: 'UI/SharkInfo.png',
         glb: 'Models/shark_animated.glb', 
-        usdz: 'Models/shark_animated.usdz' 
+        iosSrc: 'Animation/shark_animated.reality' // تم تحديث المسار للحرف الكبير والملف الجديد
     }
   };
 
@@ -233,7 +233,7 @@ const DATA = {
     const viewer = document.getElementById('oceanView');
     currentCreature = id;
     viewer.src = DATA[id].glb;
-    viewer.iosSrc = DATA[id].usdz;
+    viewer.iosSrc = DATA[id].iosSrc; // يستخدم الآن iosSrc من الكائن أعلاه
     
     document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-' + id).classList.add('active');
