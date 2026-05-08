@@ -3,28 +3,23 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-  <title>OceanAR — Immersive Deep Sea</title>
+  <title>OceanAR — KAU Project</title>
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Space+Mono:wght@400;700&display=swap');
-    :root { --deep: #020c18; --teal: #1ab3c8; --foam: #a8f0f5; --glow: #00ffe7; --text: #d8f4f7; }
+    :root { --deep: #020c18; --teal: #1ab3c8; --foam: #a8f0f5; --glow: #00ffe7; }
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
-    body { font-family:'Space Mono',monospace; background:var(--deep); color:var(--text); overflow:hidden; height: 100vh; width: 100vw; }
+    body { font-family:'Space Mono',monospace; background:var(--deep); overflow:hidden; height: 100vh; width: 100vw; }
 
-    /* LOADER & SPLASH */
-    #loading { position:fixed; inset:0; z-index:9999; background:var(--deep); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.2rem; transition: 0.4s; }
+    #loading { position:fixed; inset:0; z-index:9999; background:var(--deep); display:flex; flex-direction:column; align-items:center; justify-content:center; transition: 0.4s; }
     .hidden-load { opacity:0 !important; pointer-events:none !important; }
+    
     #splash { position:fixed; inset:0; z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(ellipse at 50% 70%, #0a3a5a 0%, #020c18 70%); transition: 0.5s; }
     .splash-hide { opacity:0 !important; visibility: hidden !important; pointer-events:none !important; }
-    .bubbles { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
-    .bubble { position:absolute; bottom:-40px; border-radius:50%; background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), rgba(26,179,200,0.08)); border:1px solid rgba(26,179,200,0.25); animation:rise linear infinite; }
-    @keyframes rise { to { transform:translateY(-110vh); opacity:0; } }
-    .title { font-family:'Cormorant Garamond',serif; font-size:clamp(3.2rem, 11vw, 6rem); color:var(--foam); margin-bottom: 1.8rem;}
-    #startBtn { border:1.5px solid var(--glow); color:var(--glow); background:transparent; padding:1rem 2.5rem; cursor:pointer; text-transform:uppercase; font-size:0.75rem; letter-spacing:0.2em; }
 
-    /* UI & HUD */
-    .hud-top { position:absolute; top:0; left:0; right:0; padding:1.5rem; display:flex; justify-content:space-between; z-index: 100; pointer-events: none; }
-    .hud-logo { font-family:'Cormorant Garamond',serif; font-size:1.2rem; color:var(--foam); }
+    .title { font-family:'Cormorant Garamond',serif; font-size:clamp(3.2rem, 11vw, 6rem); color:var(--foam); margin-bottom: 1.8rem;}
+    #startBtn { border:1.5px solid var(--glow); color:var(--glow); background:transparent; padding:1rem 2.5rem; cursor:pointer; text-transform:uppercase; }
+
     #creatureSelector { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); display:flex; gap:0.8rem; z-index:150; }
     .creature-btn { background:rgba(2,12,24,0.85); border:1px solid rgba(26,179,200,0.3); color:var(--foam); padding:0.6rem 1rem; border-radius: 4px; font-size:0.55rem; text-transform:uppercase; cursor:pointer; }
     .creature-btn.active { border-color:var(--glow); color:var(--glow); }
@@ -40,23 +35,17 @@
 
 <div id="loading">
   <div style="font-size:2rem;">🐠</div>
-  <div style="font-size:0.6rem; color:var(--teal);">SYNCING NEURAL LINK...</div>
 </div>
 
 <div id="splash">
-  <div class="bubbles" id="bubblesEl"></div>
   <div class="splash-content">
     <h1 class="title">Ocean<em>AR</em></h1>
-    <button id="startBtn">Begin Experience</button>
+    <button id="startBtn">Begin</button>
   </div>
 </div>
 
 <div id="imageOverlay" onclick="this.style.display='none'">
     <img id="infoImg" src="" alt="Info">
-</div>
-
-<div class="hud-top">
-    <div class="hud-logo">Ocean<span>AR</span></div>
 </div>
 
 <model-viewer 
@@ -67,7 +56,7 @@
   ar-placement="floor" 
   camera-controls 
   autoplay>
-  <button slot="ar-button" id="ar-button">ENTER AR WORLD</button>
+  <button slot="ar-button" id="ar-button">ENTER AR</button>
   <div id="creatureSelector">
     <button id="btn-fish" class="creature-btn active" onclick="switchCreature('fish')">🐠 Fish</button>
     <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')">🦈 Shark</button>
@@ -75,16 +64,17 @@
 </model-viewer>
 
 <script>
+// الروابط المطلقة والنظيفة (بدون ?v= عشان الآيفون ما يضيع)
 const DATA = {
     fish: { 
         info: 'UI/FishInfo.png', 
         glb: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.glb', 
-        ios: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.usdz?v=' + Date.now()
+        ios: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.usdz' 
     },
     shark: { 
         info: 'UI/SharkInfo.png', 
         glb: 'https://omar-is03.github.io/ocean-ar/Models/shark_animated.glb', 
-        ios: 'https://omar-is03.github.io/ocean-ar/Animation/shark_animated.reality?v=' + Date.now()
+        ios: 'https://omar-is03.github.io/ocean-ar/Animation/shark_animated.reality' 
     }
 };
 
@@ -92,45 +82,22 @@ const viewer = document.getElementById('oceanView');
 let current = 'fish';
 let tapX, tapY;
 
-// دالة التبديل
-function switchCreature(id) {
-    current = id;
-    
-    // تحديث الموديل في الصفحة
-    viewer.src = DATA[id].glb;
-    
-    // إجبار زر الـ AR على تحديث الرابط بنسخة جديدة تماماً
-    const newIosSrc = DATA[id].ios;
-    viewer.setAttribute('ios-src', newIosSrc);
-    
-    console.log("Switching to: " + newIosSrc);
-
-    document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-' + id).classList.add('active');
-}
-
-// ── مهم جداً: حل مشكلة "تعذر عرض العنصر" ──
-viewer.addEventListener('ar-status', (event) => {
-    if (event.detail.status === 'failed') {
-        alert("سفاري معلق، يرجى تحديث الصفحة أو فتحها في تبويب خاص (Private)");
-    }
-});
-
 window.addEventListener('load', () => {
-    // تشغيل الفقاعات
-    const el = document.getElementById('bubblesEl');
-    for (let i = 0; i < 15; i++) {
-        const b = document.createElement('div');
-        b.className = 'bubble';
-        b.style.cssText = `width:${Math.random()*20+8}px;height:20px;left:${Math.random()*100}%;animation-duration:${Math.random()*8+4}s;`;
-        el.appendChild(b);
-    }
-    setTimeout(() => document.getElementById('loading').classList.add('hidden-load'), 1000);
+    setTimeout(() => document.getElementById('loading').classList.add('hidden-load'), 800);
 });
 
 document.getElementById('startBtn').addEventListener('click', () => {
     document.getElementById('splash').classList.add('splash-hide');
 });
+
+function switchCreature(id) {
+    current = id;
+    viewer.src = DATA[id].glb;
+    viewer.setAttribute('ios-src', DATA[id].ios);
+    
+    document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-' + id).classList.add('active');
+}
 
 viewer.addEventListener('pointerdown', e => { tapX = e.clientX; tapY = e.clientY; });
 viewer.addEventListener('pointerup', e => {
