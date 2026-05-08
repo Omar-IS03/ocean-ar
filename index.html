@@ -146,8 +146,8 @@
 
 <model-viewer 
   id="oceanView"
-  src="Models/school_of_fish.glb"
-  ios-src="Models/school_of_fish.usdz"
+  src="Models/School_of_fish.glb"
+  ios-src="Models/School_of_fish.usdz"
   ar 
   ar-modes="quick-look webxr scene-viewer" 
   ar-placement="floor" 
@@ -186,19 +186,49 @@ const DATA = {
 const viewer = document.getElementById('oceanView');
 const audio = document.getElementById('sharkGrowl');
 let currentCreature = 'fish';
+let tapStartX, tapStartY;
 
-// دالة التبديل الذكية - تضمن تحديث المسارات وإيقاف الصوت خارج الـ AR
+// 1. منطق الفقاعات (كان محذوف في كودك ورجعناه)
+function makeBubbles() {
+    const el = document.getElementById('bubblesEl');
+    if (!el) return;
+    for (let i = 0; i < 15; i++) {
+        const b = document.createElement('div');
+        b.className = 'bubble';
+        const s = Math.random()*20+8;
+        b.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*8+4}s;animation-delay:${Math.random()*5}s;`;
+        el.appendChild(b);
+    }
+}
+
+// 2. التحميل وشاشة البداية
+window.addEventListener('load', () => {
+    makeBubbles();
+    setTimeout(() => {
+        const loader = document.getElementById('loading');
+        loader.classList.add('hidden-load');
+        setTimeout(() => { loader.style.display = 'none'; }, 400);
+    }, 1200);
+});
+
+document.getElementById('startBtn').addEventListener('click', (e) => {
+    e.stopPropagation(); 
+    document.getElementById('splash').classList.add('splash-hide');
+    setTimeout(() => { 
+        document.getElementById('splash').style.display = 'none'; 
+    }, 500);
+    // تشغيل السمك كخيار افتراضي عند البداية
+    switchCreature('fish');
+});
+
+// 3. دالة التبديل (الأنيميشن والصوت)
 function switchCreature(id) {
     currentCreature = id;
     
-    // تحديث الموديل للمتصفح والأندرويد (GLB)
     viewer.src = DATA[id].glb;
-    
-    // تحديث الموديل للآيفون (USDZ/Reality)
-    // نستخدم setAttribute لضمان أن نظام Quick Look يقرأ المسار الجديد
     viewer.setAttribute('ios-src', DATA[id].ios);
     
-    // إيقاف أي صوت شغال فوراً عند التبديل لضمان الهدوء خارج الـ AR
+    // الصرامة التامة: الصوت يوقف خارج الـ AR
     audio.pause();
     audio.currentTime = 0;
     
@@ -206,31 +236,42 @@ function switchCreature(id) {
     document.getElementById('btn-' + id).classList.add('active');
 }
 
-// التحكم بالصوت: يشتغل *فقط* لما تفتح الكاميرا وتكون مختار القرش
+// 4. التحكم بالصوت داخل الـ AR فقط
 viewer.addEventListener('ar-status', (event) => {
     if (event.detail.status === 'session-started') {
         if (currentCreature === 'shark') {
-            audio.play().catch(e => console.log("Audio blocked or waiting for link"));
+            audio.play().catch(e => console.log("Audio blocked by iOS AR mode"));
         }
     } else if (event.detail.status === 'not-presenting') {
-        // بمجرد إغلاق الكاميرا يطفي الصوت فوراً
         audio.pause();
         audio.currentTime = 0;
     }
 });
 
-// منطق زر البداية والتحميل (نفس كودك الأصلي)
-document.getElementById('startBtn').addEventListener('click', () => {
-    document.getElementById('splash').classList.add('splash-hide');
-    // تشغيل السمك كخيار افتراضي عند البداية
-    switchCreature('fish');
+// 5. التفاعل واللوحة الزجاجية (كانت محذوفة بالكامل ورجعناها)
+viewer.addEventListener('pointerdown', (e) => {
+    tapStartX = e.clientX;
+    tapStartY = e.clientY;
 });
 
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        document.getElementById('loading').classList.add('hidden-load');
-    }, 1000);
+viewer.addEventListener('pointerup', (e) => {
+    if (e.target.closest('.creature-btn') || e.target.closest('#ar-button') || e.target.closest('.Hotspot')) return;
+    const moveX = Math.abs(e.clientX - tapStartX);
+    const moveY = Math.abs(e.clientY - tapStartY);
+    if (moveX < 10 && moveY < 10) showInfo();
 });
+
+function showInfo() {
+    if (document.getElementById('splash').style.display === 'none') {
+        const overlay = document.getElementById('imageOverlay');
+        document.getElementById('infoImg').src = DATA[currentCreature].infoImg;
+        overlay.style.display = 'flex';
+    }
+}
+
+function hideInfo() {
+    document.getElementById('imageOverlay').style.display = 'none';
+}
 </script>
 </body>
 </html>
