@@ -75,7 +75,7 @@
     .creature-btn {
       background:rgba(2,12,24,0.85); border:1px solid rgba(26,179,200,0.3); color:var(--foam);
       font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.1rem; text-transform:uppercase;
-      padding:0.6rem 1rem; cursor:pointer; backdrop-filter:blur(10px); display:flex; flex-direction:column; align-items:center; gap:0.3rem;
+      padding:0.6rem 1rem; border-radius: 4px; cursor:pointer; backdrop-filter:blur(10px); display:flex; flex-direction:column; align-items:center; gap:0.3rem;
     }
     .creature-btn.active { border-color:var(--glow); color:var(--glow); box-shadow:0 0 15px rgba(0,255,231,0.2); }
 
@@ -118,13 +118,17 @@
       position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%);
       background: var(--glow); color: var(--deep); border: none;
       padding: 1rem 2rem; font-family:'Space Mono',monospace; font-weight: 700; letter-spacing: 0.15em;
-      text-transform: uppercase; cursor: pointer;
+      text-transform: uppercase; border-radius: 4px; cursor: pointer;
     }
 
     model-viewer { width: 100%; height: 100%; background-color: var(--deep); }
   </style>
 </head>
 <body>
+
+<audio id="sharkGrowl" loop>
+  <source src="Audio/SharkSound.mp3" type="audio/mpeg">
+</audio>
 
 <div id="loading">
   <div class="fish-anim">🐠</div>
@@ -154,7 +158,10 @@
   id="oceanView"
   ar ar-modes="webxr scene-viewer quick-look" 
   ar-placement="floor" 
-  camera-controls auto-rotate shadow-intensity="1">
+  camera-controls 
+  autoplay
+  auto-rotate 
+  shadow-intensity="1">
   
   <button slot="ar-button" id="ar-button">ENTER AR WORLD</button>
 
@@ -167,16 +174,18 @@
     <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')"><span>🦈</span>Shark</button>
   </div>
 </model-viewer>
+
 <script>
 const DATA = {
     fish: { 
         name: 'School of Fish', 
         infoImg: 'UI/FishInfo.png',
-        glb: 'models/school_of_fish.glb', 
-        usdz: 'models/school_of_fish.usdz' 
+        glb: 'Models/school_of_fish.glb', 
+        usdz: 'Models/school_of_fish.usdz' 
     },
-shark: { 
+    shark: { 
         name: 'Swimming Shark', 
+        infoImg: 'UI/SharkInfo.png',
         glb: 'Models/shark_animated.glb', 
         usdz: 'Models/shark_animated.usdz' 
     }
@@ -195,9 +204,13 @@ shark: {
     }, 1200);
   });
 
-  // 2. START EXPERIENCE
+  // 2. START EXPERIENCE & AUDIO
   document.getElementById('startBtn').addEventListener('click', (e) => {
-    e.stopPropagation(); // Prevents immediate info trigger
+    e.stopPropagation(); 
+    
+    // Trigger the shark sound when they click Begin
+    document.getElementById('sharkGrowl').play().catch(err => console.log("Audio waiting for user..."));
+
     document.getElementById('splash').classList.add('splash-hide');
     setTimeout(() => { 
         document.getElementById('splash').style.display = 'none'; 
@@ -226,7 +239,7 @@ shark: {
     document.getElementById('btn-' + id).classList.add('active');
   }
 
-  // 3. SMART INTERACTION (THE FIX)
+  // 3. SMART INTERACTION
   const viewer = document.getElementById('oceanView');
 
   viewer.addEventListener('pointerdown', (e) => {
@@ -235,27 +248,22 @@ shark: {
   });
 
   viewer.addEventListener('pointerup', (e) => {
-    // CRITICAL FIX: If you click a button, DON'T show the info card
-    if (e.target.closest('.creature-btn') || e.target.closest('#ar-button')) {
+    if (e.target.closest('.creature-btn') || e.target.closest('#ar-button') || e.target.closest('.Hotspot')) {
         return; 
     }
 
     const moveX = Math.abs(e.clientX - tapStartX);
     const moveY = Math.abs(e.clientY - tapStartY);
 
-    // Only show info if it was a quick tap on the shark/background
     if (moveX < 10 && moveY < 10) {
         showInfo();
     }
   });
 
   function showInfo() {
-    // Safety check: only show if we are NOT on the splash screen
     if (document.getElementById('splash').style.display === 'none') {
         const overlay = document.getElementById('imageOverlay');
         const img = document.getElementById('infoImg');
-        
-        // Force the path to be correct (Check your UI folder name casing!)
         img.src = DATA[currentCreature].infoImg;
         overlay.style.display = 'flex';
     }
