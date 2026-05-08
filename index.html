@@ -167,21 +167,22 @@
 
 <script>
 /**
- * ملاحظة لعمر: المسارات مطابقة لما طلبت (أول حرف كبير)
- * تم إصلاح منطق الصوت ليعمل فقط داخل الـ AR لتجنب الكراش
+ * المسارات هنا مطابقة حرفياً للملفات اللي رفعتها لي:
+ * المجلدات فقط تبدأ بكابيتال (Models, Animation, UI)
+ * أسماء الملفات كما رفعتها بالضبط (shark_animated سمول، SharkInfo كابيتال)
  */
 const DATA = {
     fish: { 
         name: 'School of Fish', 
         infoImg: 'UI/FishInfo.png',
-        glb: 'Models/School_of_fish.glb', 
-        ios: 'Models/School_of_fish.usdz' 
+        glb: 'Models/school_of_fish.glb', 
+        ios: 'Models/school_of_fish.usdz' 
     },
     shark: { 
         name: 'Swimming Shark', 
         infoImg: 'UI/SharkInfo.png',
-        glb: 'Models/Shark_animated.glb', 
-        ios: 'Animation/Shark_animated.reality' 
+        glb: 'Models/shark_animated.glb', 
+        ios: 'Animation/shark_animated.usdz' // (استخدمت الـ usdz اللي رفعته أو حط .reality إذا تبي)
     }
   };
 
@@ -226,7 +227,7 @@ const DATA = {
     viewer.src = DATA[id].glb;
     viewer.setAttribute('ios-src', DATA[id].ios);
     
-    // إيقاف الصوت خارج الـ AR تماماً لمنع الكراش
+    // إيقاف الصوت خارج الـ AR
     audio.pause();
     audio.currentTime = 0;
     
@@ -234,7 +235,7 @@ const DATA = {
     document.getElementById('btn-' + id).classList.add('active');
   }
 
-  // التحكم بالصوت داخل الـ AR فقط لتجنب الإزعاج والكراش
+  // التحكم بالصوت داخل الـ AR فقط لمنع الإزعاج والكراش
   viewer.addEventListener('ar-status', (event) => {
     if (event.detail.status === 'session-started') {
         if (currentCreature === 'shark') {
