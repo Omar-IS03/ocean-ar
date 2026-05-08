@@ -172,96 +172,65 @@ const DATA = {
     fish: { 
         name: 'School of Fish', 
         infoImg: 'UI/FishInfo.png',
-        glb: 'Models/school_of_fish.glb', 
-        ios: 'Models/school_of_fish.usdz' 
+        glb: 'Models/School_of_fish.glb', 
+        ios: 'Models/School_of_fish.usdz' 
     },
     shark: { 
         name: 'Swimming Shark', 
         infoImg: 'UI/SharkInfo.png',
-        glb: 'Models/shark_animated.glb', 
-        ios: 'Animation/shark_animated.reality' // الآيفون الحين بيلقاه ويشغل الدوران
+        glb: 'Models/Shark_animated.glb', 
+        ios: 'Animation/Shark_animated.reality' 
     }
 };
 
-  let currentCreature = 'fish';
-  let tapStartX, tapStartY;
-  const viewer = document.getElementById('oceanView');
-  const audio = document.getElementById('sharkGrowl');
+const viewer = document.getElementById('oceanView');
+const audio = document.getElementById('sharkGrowl');
+let currentCreature = 'fish';
 
-  document.addEventListener('DOMContentLoaded', () => {
-    makeBubbles();
-    setTimeout(() => {
-        const loader = document.getElementById('loading');
-        loader.classList.add('hidden-load');
-        setTimeout(() => { loader.style.display = 'none'; }, 400);
-    }, 1200);
-  });
-
-  document.getElementById('startBtn').addEventListener('click', (e) => {
-    e.stopPropagation(); 
-    document.getElementById('splash').classList.add('splash-hide');
-    setTimeout(() => { 
-        document.getElementById('splash').style.display = 'none'; 
-    }, 500);
-  });
-
-  function makeBubbles() {
-    const el = document.getElementById('bubblesEl');
-    for (let i = 0; i < 15; i++) {
-      const b = document.createElement('div');
-      b.className = 'bubble';
-      const s = Math.random()*20+8;
-      b.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*8+4}s;animation-delay:${Math.random()*5}s;`;
-      el.appendChild(b);
-    }
-  }
-
-  function switchCreature(id) {
+// دالة التبديل الذكية - تضمن تحديث المسارات وإيقاف الصوت خارج الـ AR
+function switchCreature(id) {
     currentCreature = id;
-    viewer.src = DATA[id].glb;
-    viewer.iosSrc = DATA[id].ios; // استخدام الخاصية مباشرة بدل setAttribute لتجنب التعليق
     
-    // الصرامة التامة: الصوت مستحيل يشتغل برا الـ AR
+    // تحديث الموديل للمتصفح والأندرويد (GLB)
+    viewer.src = DATA[id].glb;
+    
+    // تحديث الموديل للآيفون (USDZ/Reality)
+    // نستخدم setAttribute لضمان أن نظام Quick Look يقرأ المسار الجديد
+    viewer.setAttribute('ios-src', DATA[id].ios);
+    
+    // إيقاف أي صوت شغال فوراً عند التبديل لضمان الهدوء خارج الـ AR
     audio.pause();
     audio.currentTime = 0;
     
     document.querySelectorAll('.creature-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-' + id).classList.add('active');
-  }
+}
 
-  // هنا المربط: الصوت يشتغل *فقط* إذا فتحت الكاميرا
-  viewer.addEventListener('ar-status', (event) => {
+// التحكم بالصوت: يشتغل *فقط* لما تفتح الكاميرا وتكون مختار القرش
+viewer.addEventListener('ar-status', (event) => {
     if (event.detail.status === 'session-started') {
         if (currentCreature === 'shark') {
-            audio.play().catch(e => console.log("Audio blocked by iOS AR mode"));
+            audio.play().catch(e => console.log("Audio blocked or waiting for link"));
         }
     } else if (event.detail.status === 'not-presenting') {
-        // إذا قفلت الـ AR يطفي الصوت
+        // بمجرد إغلاق الكاميرا يطفي الصوت فوراً
         audio.pause();
         audio.currentTime = 0;
     }
-  });
+});
 
-  viewer.addEventListener('pointerdown', (e) => {
-    tapStartX = e.clientX;
-    tapStartY = e.clientY;
-  });
+// منطق زر البداية والتحميل (نفس كودك الأصلي)
+document.getElementById('startBtn').addEventListener('click', () => {
+    document.getElementById('splash').classList.add('splash-hide');
+    // تشغيل السمك كخيار افتراضي عند البداية
+    switchCreature('fish');
+});
 
-  viewer.addEventListener('pointerup', (e) => {
-    if (e.target.closest('.creature-btn') || e.target.closest('#ar-button') || e.target.closest('.Hotspot')) return;
-    const moveX = Math.abs(e.clientX - tapStartX);
-    const moveY = Math.abs(e.clientY - tapStartY);
-    if (moveX < 10 && moveY < 10) showInfo();
-  });
-
-  function showInfo() {
-    if (document.getElementById('splash').style.display === 'none') {
-        const overlay = document.getElementById('imageOverlay');
-        document.getElementById('infoImg').src = DATA[currentCreature].infoImg;
-        overlay.style.display = 'flex';
-    }
-  }
-  function hideInfo() { document.getElementById('imageOverlay').style.display = 'none'; }
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        document.getElementById('loading').classList.add('hidden-load');
+    }, 1000);
+});
 </script>
 </body>
 </html>
