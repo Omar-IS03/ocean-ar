@@ -57,7 +57,7 @@
     }
     .creature-btn.active { border-color: var(--glow); background: var(--glow); color: var(--deep); font-weight: bold; }
 
-    /* ENTER AR Button - Improved UI */
+    /* ENTER AR Button */
     #manual-ar-link {
       position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
       background: rgba(0, 255, 231, 0.9); color: var(--deep); 
@@ -82,7 +82,7 @@
   <source src="Audio/SharkSound.mp3" type="audio/mpeg">
 </audio>
 
-<div id="loading"> <div style="font-size:2rem; animation: float 2s infinite">🐡</div> </div>
+<div id="loading"> <div style="font-size:2rem; animation: float 2s infinite">🐢</div> </div>
 
 <div id="splash">
   <div class="splash-content" style="text-align: center;">
@@ -91,13 +91,13 @@
   </div>
 </div>
 
-<a id="manual-ar-link" rel="ar" href="https://omar-is03.github.io/ocean-ar/Models/pufferfish.usdz">
+<a id="manual-ar-link" rel="ar" href="https://omar-is03.github.io/ocean-ar/Animation/turtle_animated.reality">
   🚀 Launch AR Experience
 </a>
 
 <model-viewer 
   id="oceanView"
-  src="https://omar-is03.github.io/ocean-ar/Models/pufferfish.glb"
+  src="https://omar-is03.github.io/ocean-ar/Models/turtle_animated.glb"
   ar
   ar-modes="webxr scene-viewer quick-look" 
   camera-controls 
@@ -106,17 +106,17 @@
   autoplay>
   
   <div id="creatureSelector">
-    <button id="btn-fish" class="creature-btn active" onclick="switchCreature('fish')">🐡 Pufferfish</button>
+    <button id="btn-turtle" class="creature-btn active" onclick="switchCreature('turtle')">🐢 Sea Turtle</button>
     <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')">🦈 Great White</button>
   </div>
 </model-viewer>
 
 <script>
-// داتا المشاريع - تأكد من صحة مسار الـ Reality للمستقبل
+// تحديث الداتا لتشمل السلحفاة بدلاً من السمكة
 const DATA = {
-    fish: { 
-        glb: 'https://omar-is03.github.io/ocean-ar/Models/pufferfish.glb', 
-        ios: 'https://omar-is03.github.io/ocean-ar/Models/pufferfish.usdz' 
+    turtle: { 
+        glb: 'https://omar-is03.github.io/ocean-ar/Models/turtle_animated.glb', 
+        ios: 'https://omar-is03.github.io/ocean-ar/Animation/turtle_animated.reality' 
     },
     shark: { 
         glb: 'https://omar-is03.github.io/ocean-ar/Models/shark_animated.glb', 
@@ -127,7 +127,7 @@ const DATA = {
 const viewer = document.getElementById('oceanView');
 const arLink = document.getElementById('manual-ar-link');
 const audio = document.getElementById('sharkAudio');
-let currentID = 'fish';
+let currentID = 'turtle'; // البداية بالسلحفاة
 
 window.addEventListener('load', () => {
     setTimeout(() => document.getElementById('loading').classList.add('hidden-load'), 1000);
@@ -151,7 +151,7 @@ function switchCreature(id) {
     document.getElementById('btn-' + id).classList.add('active');
 }
 
-// تشجيع المتصفح على تفعيل الصوت
+// تشجيع المتصفح على تفعيل الصوت (فقط للقرش)
 arLink.addEventListener('click', () => {
     if(currentID === 'shark') {
         audio.muted = true;
@@ -161,7 +161,7 @@ arLink.addEventListener('click', () => {
     }
 });
 
-// تشغيل الصوت عند الدخول للـ AR (يعتمد على اخفاء المتصفح)
+// تشغيل الصوت عند الدخول للـ AR للقرش
 document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
         if (currentID === 'shark') {
