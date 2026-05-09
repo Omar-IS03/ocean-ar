@@ -3,37 +3,77 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-  <title>OceanAR — Final Stable</title>
+  <title>OceanAR — Professional Edition</title>
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Space+Mono:wght@400;700&display=swap');
-    :root { --deep: #020c18; --teal: #1ab3c8; --foam: #a8f0f5; --glow: #00ffe7; }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family:'Space Mono',monospace; background:var(--deep); overflow:hidden; height: 100vh; }
-
-    #loading { position:fixed; inset:0; z-index:9999; background:var(--deep); display:flex; justify-content:center; align-items:center; transition: 0.4s; }
-    .hidden-load { opacity:0 !important; pointer-events:none !important; }
     
-    #splash { position:fixed; inset:0; z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; background:radial-gradient(ellipse at 50% 70%, #0a3a5a 0%, #020c18 70%); transition: 0.5s; }
-    .splash-hide { opacity:0 !important; visibility: hidden !important; pointer-events:none !important; }
-
-    .title { font-family:'Cormorant Garamond',serif; font-size:clamp(3.2rem, 11vw, 6rem); color:var(--foam); margin-bottom: 1.8rem;}
-    #startBtn { border:1.5px solid var(--glow); color:var(--glow); background:transparent; padding:1rem 2.5rem; cursor:pointer; text-transform:uppercase; }
-
-    #creatureSelector { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); display:flex; gap:0.8rem; z-index:150; }
-    .creature-btn { background:rgba(2,12,24,0.85); border:1px solid rgba(26,179,200,0.3); color:var(--foam); padding:0.6rem 1rem; border-radius: 4px; font-size:0.55rem; text-transform:uppercase; cursor:pointer; }
-    .creature-btn.active { border-color:var(--glow); color:var(--glow); }
-
-    /* تعديل الزر: مخفي في البداية display: none */
-    #manual-ar-link {
-      position: absolute; bottom: 8rem; left: 50%; transform: translateX(-50%);
-      background: var(--glow); color: var(--deep); padding: 1rem 2rem;
-      font-weight: 700; border-radius: 4px; text-decoration: none;
-      font-size: 0.8rem; text-transform: uppercase; z-index: 1000;
-      display: none; 
+    :root { 
+      --deep: #020c18; 
+      --teal: #1ab3c8; 
+      --glow: #00ffe7; 
+      --glass: rgba(2, 12, 24, 0.7);
     }
 
-    model-viewer { width: 100%; height: 100%; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Space Mono', monospace; background:var(--deep); overflow:hidden; height: 100vh; color: white; }
+
+    /* Loading Screen */
+    #loading { 
+      position:fixed; inset:0; z-index:9999; background:var(--deep); 
+      display:flex; justify-content:center; align-items:center; transition: 0.6s; 
+    }
+    .hidden-load { opacity:0 !important; pointer-events:none !important; }
+
+    /* Splash Screen */
+    #splash { 
+      position:fixed; inset:0; z-index:1000; display:flex; flex-direction:column; 
+      align-items:center; justify-content:center; 
+      background: radial-gradient(circle at center, #0a3a5a 0%, #020c18 100%); 
+      transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
+    }
+    .splash-hide { opacity:0 !important; transform: scale(1.1); visibility: hidden !important; }
+
+    .title { font-family:'Cormorant Garamond', serif; font-size:clamp(3.5rem, 12vw, 7rem); color:var(--glow); letter-spacing: -2px; margin-bottom: 2rem;}
+    
+    #startBtn { 
+      border: 1px solid var(--glow); color: var(--glow); background: transparent; 
+      padding: 1.2rem 3rem; cursor: pointer; text-transform: uppercase; 
+      letter-spacing: 4px; transition: 0.3s; box-shadow: 0 0 15px rgba(0, 255, 231, 0.2);
+    }
+    #startBtn:hover { background: var(--glow); color: var(--deep); box-shadow: 0 0 30px var(--glow); }
+
+    /* UI Controls */
+    #creatureSelector { 
+      position:fixed; bottom: 3rem; left:50%; transform:translateX(-50%); 
+      display:flex; gap:1.5rem; z-index:150; 
+    }
+    
+    .creature-btn { 
+      background: var(--glass); border: 1px solid rgba(0, 255, 231, 0.3); 
+      color: white; padding: 0.8rem 1.5rem; border-radius: 50px; 
+      font-size: 0.7rem; text-transform: uppercase; cursor: pointer; 
+      backdrop-filter: blur(10px); transition: 0.3s;
+    }
+    .creature-btn.active { border-color: var(--glow); background: var(--glow); color: var(--deep); font-weight: bold; }
+
+    /* ENTER AR Button - Improved UI */
+    #manual-ar-link {
+      position: absolute; top: 10%; left: 50%; transform: translateX(-50%);
+      background: rgba(0, 255, 231, 0.9); color: var(--deep); 
+      padding: 1rem 2rem; font-weight: 800; border-radius: 50px; 
+      text-decoration: none; font-size: 0.8rem; letter-spacing: 2px;
+      z-index: 1000; display: none; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.05); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+
+    model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
   </style>
 </head>
 <body>
@@ -42,36 +82,41 @@
   <source src="Audio/SharkSound.mp3" type="audio/mpeg">
 </audio>
 
-<div id="loading"> <div style="font-size:2rem;">🐠</div> </div>
+<div id="loading"> <div style="font-size:2rem; animation: float 2s infinite">🐡</div> </div>
 
 <div id="splash">
-  <div class="splash-content">
+  <div class="splash-content" style="text-align: center;">
     <h1 class="title">Ocean<em>AR</em></h1>
-    <button id="startBtn">Begin</button>
+    <button id="startBtn">Discover Abyss</button>
   </div>
 </div>
 
-<a id="manual-ar-link" rel="ar" href="https://omar-is03.github.io/ocean-ar/Models/school_of_fish.usdz">
-  ENTER AR WORLD
+<a id="manual-ar-link" rel="ar" href="https://omar-is03.github.io/ocean-ar/Models/pufferfish.usdz">
+  🚀 Launch AR Experience
 </a>
 
 <model-viewer 
   id="oceanView"
-  src="https://omar-is03.github.io/ocean-ar/Models/school_of_fish.glb"
-  ar-modes="webxr scene-viewer" 
+  src="https://omar-is03.github.io/ocean-ar/Models/pufferfish.glb"
+  ar
+  ar-modes="webxr scene-viewer quick-look" 
   camera-controls 
+  shadow-intensity="1"
+  exposure="1.2"
   autoplay>
+  
   <div id="creatureSelector">
-    <button id="btn-fish" class="creature-btn active" onclick="switchCreature('fish')">🐠 Fish</button>
-    <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')">🦈 Shark</button>
+    <button id="btn-fish" class="creature-btn active" onclick="switchCreature('fish')">🐡 Pufferfish</button>
+    <button id="btn-shark" class="creature-btn" onclick="switchCreature('shark')">🦈 Great White</button>
   </div>
 </model-viewer>
 
 <script>
+// داتا المشاريع - تأكد من صحة مسار الـ Reality للمستقبل
 const DATA = {
     fish: { 
-        glb: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.glb', 
-        ios: 'https://omar-is03.github.io/ocean-ar/Models/school_of_fish.usdz' 
+        glb: 'https://omar-is03.github.io/ocean-ar/Models/pufferfish.glb', 
+        ios: 'https://omar-is03.github.io/ocean-ar/Models/pufferfish.usdz' 
     },
     shark: { 
         glb: 'https://omar-is03.github.io/ocean-ar/Models/shark_animated.glb', 
@@ -85,13 +130,12 @@ const audio = document.getElementById('sharkAudio');
 let currentID = 'fish';
 
 window.addEventListener('load', () => {
-    setTimeout(() => document.getElementById('loading').classList.add('hidden-load'), 800);
+    setTimeout(() => document.getElementById('loading').classList.add('hidden-load'), 1000);
 });
 
-// عند الضغط على Begin: نخفي السبلش ونظهر زر الـ AR
 document.getElementById('startBtn').addEventListener('click', () => {
     document.getElementById('splash').classList.add('splash-hide');
-    arLink.style.display = 'inline-block'; // إظهار الزر الآن
+    arLink.style.display = 'inline-block';
 });
 
 function switchCreature(id) {
@@ -107,21 +151,21 @@ function switchCreature(id) {
     document.getElementById('btn-' + id).classList.add('active');
 }
 
-// ── تحديث منطق الصوت ليكون أكثر استجابة ──
+// تشجيع المتصفح على تفعيل الصوت
 arLink.addEventListener('click', () => {
-    // هذا السطر يجهز الصوت للعمل (تحفيز من المستخدم)
     if(currentID === 'shark') {
-        audio.muted = true; // نشغله صامت مؤقتاً عشان "نخدع" المتصفح
+        audio.muted = true;
         audio.play().then(() => {
-            console.log("Audio Unlocked");
+            console.log("Audio Unlocked for AR");
         });
     }
 });
 
+// تشغيل الصوت عند الدخول للـ AR (يعتمد على اخفاء المتصفح)
 document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
         if (currentID === 'shark') {
-            audio.muted = false; // نلغي الكتم أول ما يدخل الـ AR
+            audio.muted = false;
             audio.play();
         }
     } else {
